@@ -4,12 +4,34 @@ import json
 def read_raw(_in_file):
     """
     Reads json dictionary file.
-    :param _in_file:
-    :return: list of dictionaries
+    :param _in_file: path to dictionary file
+    :return: list of dictionaries items
     """
     with open(_in_file, 'r') as f:
-        _take_dict = json.load(f)
-    return _take_dict
+        _dict = json.load(f)
+    return _dict
+
+
+def read_valid(_in_file):
+    """
+    Reads json dictionary file and returns valid items only (annotation flag-wise)
+    :param _in_file: path to dictionary
+    :return: list of dictionary items
+    """
+    with open(_in_file, 'r') as f:
+        _dict = json.load(f)
+    _dict = [i for i in _dict if i['annotation_flag'] == 1]
+    return _dict
+
+
+def save_dict(_file, _dictionary):
+    """
+    Saves json dictionary to file
+    :param _file: path to dictionary file
+    :param _dictionary: list of dictionary items
+    """
+    with open(_file, 'w') as jf:
+        json.dump(_dictionary, jf)
 
 
 def search_dict_sign(_dict_file, _sign_id):

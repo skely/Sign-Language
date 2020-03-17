@@ -1,6 +1,5 @@
 import os
-import SL_dict
-import BVH
+from lib import BVH, SL_dict
 import sys
 import numpy as np
 

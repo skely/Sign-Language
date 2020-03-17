@@ -1,6 +1,4 @@
-import BVH
-import SL_dict
-import data_prep
+from lib import BVH, data_prep
 import os
 import numpy as np
 

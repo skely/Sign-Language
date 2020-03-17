@@ -1,9 +1,6 @@
-import BVH
-import SL_dict
-import data_prep
+from lib import BVH, data_prep
 import os
 import numpy as np
-import matplotlib.pyplot as plt
 
 data_dir = '/home/jedle/data/Sign-Language/_source_clean/dataprep/'
 source_dir = '/home/jedle/data/Sign-Language/_source_clean/'
@@ -76,7 +73,7 @@ for i, item in enumerate(item_list):
     item_bef = item[:surroundings[0]+1, :]
     item_aft = item[-surroundings[1]-1:, :]
     transition_length = np.size(item, 0) - surroundings[0] - surroundings[1]
-    transition_approximation = data_prep.sign_synthesis(item_bef, item_aft, transition_length-1)
+    transition_approximation = data_prep.sign_synthesis(item_bef, item_aft, transition_length - 1)
     new_item = np.concatenate((item_bef, transition_approximation, item_aft))
     data_X[i, :, :] = new_item
     # print(np.shape(item))
