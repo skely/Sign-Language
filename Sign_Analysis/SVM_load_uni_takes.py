@@ -9,7 +9,7 @@ import random
 
 # fi = 'C:/Škola/FAV/PRJ/PRJ5/dictionary_takes_v3.txt'# '/home/jedle/data/Sign-Language/slovnik/pocasi_slovnik9.txt'
 
-with open('D:/Škola/FAV/PRJ/BC/Output/unigrams_dict.pkl', 'rb') as f:  # Python 3: open(..., 'rb')
+with open('D:/Škola/FAV/PRJ/BC/Output/uni_takes.pkl', 'rb') as f:  # Python 3: open(..., 'rb')
     signs, teacher = pickle.load(f)
 
 unigrams_valid = []
@@ -23,8 +23,11 @@ for i in range(len(teacher)):
         #                                                  item[3]))
 
 print((unigrams_valid))
+nmc = 1000000
 mcs = []
-for imc in range(100000):
+for imc in range(nmc):
+    if (imc/nmc*100)%1 ==0:
+        print('{}%'.format(100*imc/nmc))
     (random.shuffle(unigrams_valid))
 
     trigrams_valid_train = []
@@ -46,17 +49,8 @@ for imc in range(100000):
     mcs.append(correct/len(trigrams_valid_test))
 print(len(trigrams_valid_test))
 print(len(trigrams_valid_train))
-plt.hist(mcs)
 print(plt.hist(mcs))
 print(np.var(mcs))
 print(np.mean(mcs))
+plt.title('Unigrams Takes')
 plt.show()
-# xdd = []
-# xddd = []
-# svm_trigram = svm.LinearSVC()
-# for sign in trigrams_valid:
-#     xdd.append(sign[0:-1])
-#     xddd.append(sign[3])
-# svm_trigram.fit(xdd, xddd)
-# print(sum(svm_trigram.predict(xdd) == xddd))
-# print(sum(svm_trigram.predict(xdd) == xddd)/len(xdd))

@@ -199,7 +199,6 @@ def get_name(_index, _header):
     :return: string
     """
     _marker_dict = explain_header(_header)
-    _real_idx = 0
     for _marker in _marker_dict:
         _index -= _marker['ch_count']
         if _index < 0:
@@ -207,6 +206,40 @@ def get_name(_index, _header):
                 return -1
             else:
                 return _marker['m_name']
+    return None
+
+
+def get_offset_sum(_index, _header):
+    """
+    :param _index: index of marker
+    :param _header: header
+    :return: string
+    """
+    _marker_dict = explain_header(_header)
+    for _marker in _marker_dict:
+        _index -= _marker['ch_count']
+        if _index < 0:
+            if _marker['ch_count'] <= 0:
+                return -1
+            else:
+                return sum([float(i) for i in _marker['offset']])
+    return None
+
+
+def get_ch_count(_index, _header):
+    """
+    :param _index: index of marker
+    :param _header: header
+    :return: string
+    """
+    _marker_dict = explain_header(_header)
+    for _marker in _marker_dict:
+        _index -= _marker['ch_count']
+        if _index < 0:
+            if _marker['ch_count'] <= 0:
+                return -1
+            else:
+                return _marker['ch_count']
     return None
 
 

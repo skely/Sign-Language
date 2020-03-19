@@ -7,6 +7,7 @@ from sklearn import svm
 import pickle
 import matplotlib.pyplot as plt
 from operator import itemgetter
+from collections import Counter
 
 
 def movement_ratio(_data):
@@ -20,7 +21,7 @@ def movement_ratio(_data):
     # plt.plot(_velocity)
     # print(len(_velocity))
     # print(np.shape(_velocity))
-    return (np.sum(np.abs(_velocity))/np.size(_velocity,1))/np.size(_velocity,0)
+    return np.sum(np.abs(_velocity))/np.size(_velocity,1)
 
 
 def dominant_hand(_first, _second):
@@ -49,30 +50,38 @@ if __name__ == '__main__':
         sys.exit(-1)
 
     bvh_list = os.listdir(done_dir_name)
-    dictionary_takes = PRJ5_tools.dict_read(os.path.join(dict_path, 'dictionary_takes_v3.txt'))
+    dictionary_takes = PRJ5_tools.dict_read(os.path.join(dict_path, 'dictionary_dict_v3_edited.txt'))
     dictionary_dict = PRJ5_tools.dict_read(os.path.join(dict_path, 'dictionary_dict_v3_edited.txt'))
+    out_table = os.path.join(out_path, 'table3.csv')
 
-    all_signs_list = []
+    weighted = False
+
     dominations = []
     domination_teacher = []
     done_list = set()
     idx = 0
-    count = 0
-    # print(len(dictionary_dict))
-    print(len(dictionary_takes))
-    # for sign in dictionary_takes:
-    #     if not sign['sign_id'] in ['tra.', 'T-pose', 'T-póza', 'klapka', 'rest pose', 'rest póza', '']:
-    #         print(sign)
+    # with open(out_table, 'w') as outfile:
+    #     outfile.write('bvh_source,sign_id,ratio_LH,ratio_RH,domination,ratio_LH_arm,ratio_RH_arm,domination_arm,hand_count,symmetry\n')
     for sign in dictionary_takes:
+        print(sign)
         if sign['sign_id'] in ['tra.', 'T-pose', 'klapka', 'rest pose', '']:
             idx += 1
             continue
-        if sign['annotation_flag'] == '-1':
+
+        sign['src_pattern'] = sign['src_vid'].split('.')[0]
+
+        if sign['src_pattern'].startswith('predlozky_a_spojky_01'):
+            sign['src_pattern'] = 'predlozky_spojky_01'
+        if sign['src_pattern'].startswith('predlozky_a_spojky_02'):
+            sign['src_pattern'] = 'predlozky_spojky_02'
+        if sign['src_pattern'].startswith('predlozky_a_spojky_03'):
+            sign['src_pattern'] = 'predlozky_spojky_03'
+        if sign['src_pattern'].startswith('ostatni_03'):
+            sign['src_pattern'] = 'ostatni_03'
+        if sign['src_pattern'].startswith('ostatni_04'):
             idx += 1
             continue
-        # print(sign['sign_id'])
-        # print(sign)
-        # print(len(dictionary_takes))
+        print(sign['src_pattern'])
         percentage = 100*idx/len(dictionary_takes)
         print('Computing from {} {}... {:0.2f}%'.format(sign['src_pattern'], sign['sign_id'], percentage))
         source = [f for f in bvh_list if sign['src_pattern'] in f][0]
@@ -88,14 +97,24 @@ if __name__ == '__main__':
         traj_LH = trajectory[:, idx_LH[0]:idx_LH[-1]]
         traj_LH_arm = trajectory[:, idx_LH_arm[0]:idx_LH_arm[-1]]
 
+        if weighted:
+            weights = np.zeros(np.size(traj_RH, 1))
+        marker_list = []
+        for i, idx_traj in enumerate(idx_RH):
+            if weighted:
+                weights[i - 1] = PRJ5_tools.get_offset_sum(idx_traj, header)
+            marker_list.append(PRJ5_tools.get_name(idx_traj, header))
+
         if sign['annotation_Filip_bvh_frame'][0] < 0:
             sign['annotation_Filip_bvh_frame'][0] = 0
-        ratio_LH = movement_ratio(traj_LH[sign['annotation_Filip_bvh_frame'][0]:sign['annotation_Filip_bvh_frame'][1], :])
-        ratio_LH_arm = movement_ratio(traj_LH_arm[sign['annotation_Filip_bvh_frame'][0]:sign['annotation_Filip_bvh_frame'][1], :])
-        ratio_RH = movement_ratio(traj_RH[sign['annotation_Filip_bvh_frame'][0]:sign['annotation_Filip_bvh_frame'][1], :])
-        ratio_RH_arm = movement_ratio(traj_RH_arm[sign['annotation_Filip_bvh_frame'][0]:sign['annotation_Filip_bvh_frame'][1], :])
+        if weighted:
+            ratio_LH = movement_ratio(traj_LH[sign['annotation_Filip_bvh_frame'][0]:sign['annotation_Filip_bvh_frame'][1], :]*weights/len(Counter(marker_list).keys()))
+            ratio_RH = movement_ratio(traj_RH[sign['annotation_Filip_bvh_frame'][0]:sign['annotation_Filip_bvh_frame'][1], :]*weights/len(Counter(marker_list).keys()))
+        else:
+            ratio_LH = movement_ratio(traj_LH_arm[sign['annotation_Filip_bvh_frame'][0]:sign['annotation_Filip_bvh_frame'][1], :]/len(Counter(marker_list).keys()))
+            ratio_RH = movement_ratio(traj_RH_arm[sign['annotation_Filip_bvh_frame'][0]:sign['annotation_Filip_bvh_frame'][1], :]/len(Counter(marker_list).keys()))
         domination = ratio_LH/ratio_RH
-        domination_arm = ratio_LH_arm/ratio_RH_arm
+        # domination_arm = ratio_LH_arm/ratio_RH_arm
 
         hand_count = 0
         symmetry = 0
@@ -105,27 +124,23 @@ if __name__ == '__main__':
                 symmetry = item['symmetry']
                 break
         if hand_count == 0:
-            if sign['sign_id'] == 'snezi-nesnezi-snezi':
-                hand_count = 2
-            else:
-                print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
-                hand_count = -1
-                continue
-        print(domination_arm)
+            hand_count = 2
+        # print(domination_arm)
         print(hand_count)
-        dominations.append([domination_arm])
+        dominations.append([domination])
         domination_teacher.append(hand_count)
         idx += 1
-        count += 1
+            # outfile.write('{},{},{},{},{},{},{},{},{},{}\n'.format(sign['src_pattern'], sign['sign_id'], ratio_LH, ratio_RH,
+            #                                                    domination, ratio_LH_arm, ratio_RH_arm, domination_arm,
+            #                                                    hand_count, symmetry))
 
-    print(count)
     print(len(dominations))
     print(len(domination_teacher))
     print((dominations))
     print((domination_teacher))
-    svm_dom = svm.LinearSVC()
-    svm_dom.fit(dominations, domination_teacher)
-    print(svm_dom)
-    print(svm_dom.coef_)
-    with open(os.path.join(out_path, 'uni_takes.pkl'), 'wb') as f:
+    # svm_dom = svm.LinearSVC()
+    # svm_dom.fit(dominations, domination_teacher)
+    # print(svm_dom)
+    # print(svm_dom.coef_)
+    with open(os.path.join(out_path, 'uni_dict.pkl'), 'wb') as f:
         pickle.dump([dominations, domination_teacher], f)

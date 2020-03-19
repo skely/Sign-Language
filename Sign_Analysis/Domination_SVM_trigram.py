@@ -7,6 +7,7 @@ from sklearn import svm
 import pickle
 import matplotlib.pyplot as plt
 from operator import itemgetter
+from collections import Counter
 
 
 def movement_ratio(_data):
@@ -20,7 +21,7 @@ def movement_ratio(_data):
     # plt.plot(_velocity)
     # print(len(_velocity))
     # print(np.shape(_velocity))
-    return (np.sum(np.abs(_velocity))/np.size(_velocity,1))/np.size(_velocity,0)
+    return np.sum(np.abs(_velocity))/np.size(_velocity,1)
 
 
 def dominant_hand(_first, _second):
@@ -51,6 +52,8 @@ if __name__ == '__main__':
     bvh_list = os.listdir(done_dir_name)
     dictionary_takes = PRJ5_tools.dict_read(os.path.join(dict_path, 'dictionary_takes_v3.txt'))
     dictionary_dict = PRJ5_tools.dict_read(os.path.join(dict_path, 'dictionary_dict_v3_edited.txt'))
+
+    weighted = False
 
     all_signs_list = []
     dominations = []
@@ -89,15 +92,25 @@ if __name__ == '__main__':
         traj_LH = trajectory[:, idx_LH[0]:idx_LH[-1]]
         traj_LH_arm = trajectory[:, idx_LH_arm[0]:idx_LH_arm[-1]]
 
+        if weighted:
+            weights = np.zeros(np.size(traj_RH, 1))
+        marker_list = []
+        for i, idx_traj in enumerate(idx_RH):
+            if weighted:
+                weights[i - 1] = PRJ5_tools.get_offset_sum(idx_traj, header)
+            marker_list.append(PRJ5_tools.get_name(idx_traj, header))
+
         if sign['annotation_Filip_bvh_frame'][0] < 0:
             sign['annotation_Filip_bvh_frame'][0] = 0
-        ratio_LH = movement_ratio(traj_LH[sign['annotation_Filip_bvh_frame'][0]:sign['annotation_Filip_bvh_frame'][1], :])
-        ratio_LH_arm = movement_ratio(traj_LH_arm[sign['annotation_Filip_bvh_frame'][0]:sign['annotation_Filip_bvh_frame'][1], :])
-        ratio_RH = movement_ratio(traj_RH[sign['annotation_Filip_bvh_frame'][0]:sign['annotation_Filip_bvh_frame'][1], :])
-        ratio_RH_arm = movement_ratio(traj_RH_arm[sign['annotation_Filip_bvh_frame'][0]:sign['annotation_Filip_bvh_frame'][1], :])
+        if weighted:
+            ratio_LH = movement_ratio(traj_LH[sign['annotation_Filip_bvh_frame'][0]:sign['annotation_Filip_bvh_frame'][1], :]*weights/len(Counter(marker_list).keys()))
+            ratio_RH = movement_ratio(traj_RH[sign['annotation_Filip_bvh_frame'][0]:sign['annotation_Filip_bvh_frame'][1], :]*weights/len(Counter(marker_list).keys()))
+        else:
+            ratio_LH = movement_ratio(traj_LH_arm[sign['annotation_Filip_bvh_frame'][0]:sign['annotation_Filip_bvh_frame'][1], :]/len(Counter(marker_list).keys()))
+            ratio_RH = movement_ratio(traj_RH_arm[sign['annotation_Filip_bvh_frame'][0]:sign['annotation_Filip_bvh_frame'][1], :]/len(Counter(marker_list).keys()))
         domination = ratio_LH/ratio_RH
-        domination_arm = ratio_LH_arm/ratio_RH_arm
-        sign['domination_arm'] = domination_arm
+        # domination_arm = ratio_LH_arm/ratio_RH_arm
+        sign['domination_arm'] = domination
 
 
         hand_count = 0
