@@ -1,11 +1,10 @@
 import os
-import SL_dict
-import BVH
+from lib import BVH, SL_dict
 import sys
 import numpy as np
 
 
-def mine_sign_trajectories(_bvh_src_path, _dict_take_file, _surroundings, _sign_id='', _sign_name='tra.', _verbose=True):
+def mine_sign_trajectories(_bvh_src_path, _dict_take_file, _surroundings, _sign_id='', _sign_name='tra.', _channels=[], _verbose=True):
     """
     returns list of numpy arrays containing trajectory. works both on signs (_sign_name not used) and transitions (sign_id='', _sign_name='tra.)
     :param _bvh_src_path:
@@ -49,10 +48,12 @@ def mine_sign_trajectories(_bvh_src_path, _dict_take_file, _surroundings, _sign_
     tot = len(files_list)
     for i, tmp_file in enumerate(files_list):
         tmp_trajectory = BVH.load_trajectory(os.path.join(_bvh_src_path, tmp_file))
+        if _channels == []:
+            _channels = np.arange(np.size(tmp_trajectory, 1))
         for item in sign_meta_list:
             if item['src_pattern'] in tmp_file:
                 beg_frame, end_frame = item['annotation_Filip_bvh_frame']
-                tmp_akt_traj = tmp_trajectory[beg_frame - _surrs[0]:end_frame + _surrs[1], :]
+                tmp_akt_traj = tmp_trajectory[beg_frame - _surrs[0]:end_frame + _surrs[1], _channels]
                 ret_list.append(tmp_akt_traj)
         if _verbose:
             sys.stdout.write('\rprocessing... {:.2f}% done.'.format(100*(i+1)/tot))
@@ -89,6 +90,20 @@ def normalize(_data, _minmax=np.array([-360, 360])):
         for ch in range(np.size(_data, 2)):
             _new_data[i, :, ch] = (_data[i, :, ch] - _minmax[0]) / (_minmax[1] - _minmax[0])
     return _new_data
+
+
+def shuffle(_data, _seed):
+    """
+    Randomize data order.
+    :param _data: np.array dim=3 [sample, time, features]
+    :param _seed: random seed
+    :return: randomized data
+    """
+    np.random.seed(_seed)
+    randomize_vector = np.arange(np.size(_data, 0))
+    np.random.shuffle(randomize_vector)
+    randomized_data = _data[randomize_vector, :, :]
+    return randomized_data
 
 
 def sign_synthesis(_sign_1, _sign_2, _gap_length, _type='cubic'):
