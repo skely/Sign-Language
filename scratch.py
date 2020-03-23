@@ -1,16 +1,22 @@
-import numpy as np
 import os
 import json
 from lib import SL_dict
 
-source_dir = '/home/jedle/data/Sign-Language/_source_clean/'
-model_code = 'model_BI_AE_lstm200_ep3.txt'
-in_file = os.path.join(source_dir, model_code)
 
-with open(in_file, 'r') as f:
-    history = json.load(f)
+work_path = '/home/jedle/data/Sign-Language/_source_clean/'
+new_dict_file = os.path.join(work_path, 'ultimate_dictionary.txt')
+bvh_path = '/home/jedle/data/Sign-Language/_source_clean/bvh/'
 
-print(model_code.split())
-for kee in history:
-    print(kee, history[kee][-1])
+dict_takes = SL_dict.read_raw(new_dict_file, 'dictionary_takes')
+dict_dict = SL_dict.read_raw(new_dict_file, 'dictionary_items')
 
+real_bvh_file_list = os.listdir(bvh_path)
+
+for item in dict_takes:
+    real_name = [bvh_name for bvh_name in real_bvh_file_list if  item['src_mocap'][:-4] in bvh_name][0]
+    item['src_mocap'] = real_name
+
+
+new_dictionary = {'dictionary_items' : dict_dict, 'dictionary_takes' : dict_takes}
+
+SL_dict.save_dict(os.path.join(work_path, 'ultimate_dictionary2.txt'), new_dictionary)
