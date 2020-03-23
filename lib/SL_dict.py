@@ -1,7 +1,18 @@
 import json
 
 
-def read_raw(_in_file, dictionary_type):
+def read_raw(_in_file):
+    """
+    Reads raw data from dictionary file.
+    :param _in_file: path
+    :return: dictionary of dictionaries
+    """
+    with open(_in_file, 'r') as f:
+        _dict = json.load(f)
+    return _dict
+
+
+def read_dictionary(_in_file, dictionary_type):
     """
     Reads json dictionary file.
     :param _in_file: path to dictionary file
@@ -23,7 +34,7 @@ def read_valid(_in_file, dictionary_type):
     :param _in_file: path to dictionary
     :return: list of dictionary items
     """
-    _dict = read_raw(_in_file, dictionary_type)
+    _dict = read_dictionary(_in_file, dictionary_type)
     _dict = [i for i in _dict if i['annotation_flag'] == 1]
     return _dict
 
@@ -46,7 +57,7 @@ def search_dict_sign(_dict_file, _sign_id):
     :param _sign_id: sign_id
     :return: sign info (dict)
     """
-    _dict = read_raw(_dict_file, 'dictionary_items')
+    _dict = read_dictionary(_dict_file, 'dictionary_items')
     _item = {}
     for _item in _dict:
         if _item['sign_id'] == _sign_id:
@@ -61,7 +72,7 @@ def search_take_file(_dict_file, _take_file):
     :param _take_file: name of searched take
     :return: list of items in take
     """
-    _dict = read_raw(_dict_file, 'dictionary_takes')
+    _dict = read_dictionary(_dict_file, 'dictionary_takes')
     ret_list = []
     for _item in _dict:
         if _item['src_video'] in _take_file:
@@ -76,7 +87,7 @@ def search_take_sign(_dict_file, _sign_id):
     :param _sign_id: sign_id
     :return: list of items
     """
-    _dict = read_raw(_dict_file, 'dictionary_takes')
+    _dict = read_dictionary(_dict_file, 'dictionary_takes')
     ret_list = []
     for _item in _dict:
         if _item['sign_id'] == _sign_id:
