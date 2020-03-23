@@ -50,7 +50,7 @@ def save_dict(_file, _dictionary):
         f.write(json_dict)
 
 
-def search_dict_sign(_dict_file, _sign_id):
+def search_dict_sign(_dict_file, _sign_id, _pattern=False):
     """
     search dictionary items for given sign_id
     :param _dict_file: path to dictionary file
@@ -58,11 +58,16 @@ def search_dict_sign(_dict_file, _sign_id):
     :return: sign info (dict)
     """
     _dict = read_dictionary(_dict_file, 'dictionary_items')
-    _item = {}
+    ret_list = []
     for _item in _dict:
-        if _item['sign_id'] == _sign_id:
-            return _item
-    return {}
+        if _pattern:
+            if _sign_id in _item['sign_id']:
+                ret_list.append(_item)
+        else:
+            if _item['sign_id'] == _sign_id:
+                ret_list.append(_item)
+
+    return ret_list
 
 
 def search_take_file(_dict_file, _take_file):
@@ -80,16 +85,21 @@ def search_take_file(_dict_file, _take_file):
     return ret_list
 
 
-def search_take_sign(_dict_file, _sign_id):
+def search_take_sign(_dict_file, _sign_id, _pattern=False):
     """
     search for sign_id in all takes annotation
     :param _dict_file: path to "takes annotation" file
     :param _sign_id: sign_id
+    :param _pattern: search for substring
     :return: list of items
     """
     _dict = read_dictionary(_dict_file, 'dictionary_takes')
     ret_list = []
     for _item in _dict:
-        if _item['sign_id'] == _sign_id:
-            ret_list.append(_item)
+        if _pattern:
+            if _sign_id in _item['sign_id']:
+                ret_list.append(_item)
+        else:
+            if _item['sign_id'] == _sign_id:
+                ret_list.append(_item)
     return ret_list
