@@ -28,16 +28,19 @@ def mine_sign_trajectories(_bvh_src_path, _dict_take_file, _surroundings, _sign_
             if r['sign_name'] == _sign_name:
                 sign_meta_list.append(r)
 
-    pattern_list = set()
+    # pattern_list = set()
+    files_list = set()
     for item in sign_meta_list:
-        pattern_list.add(item['src_pattern'])
+        # pattern_list.add(item['src_pattern'])
+        files_list.add(item['src_mocap'])
 
-    bvh_list = os.listdir(_bvh_src_path)
-    files_list = []
-    for bvh_file in bvh_list:
-        for pattern in pattern_list:
-            if pattern in bvh_file:
-                files_list.append(bvh_file)
+    # bvh_list = os.listdir(_bvh_src_path)
+    # files_list = []
+    # for bvh_file in bvh_list:
+    #     for pattern in pattern_list:
+    #         if pattern in bvh_file:
+    #             files_list.append(bvh_file)
+
     if _verbose:
         if _sign_id == '' and _sign_name == 'tra.':
             print('searching for transitions.'.format(_sign_id))
@@ -51,7 +54,7 @@ def mine_sign_trajectories(_bvh_src_path, _dict_take_file, _surroundings, _sign_
         if _channels == []:
             _channels = np.arange(np.size(tmp_trajectory, 1))
         for item in sign_meta_list:
-            if item['src_pattern'] in tmp_file:
+            if item['src_mocap'] in tmp_file:
                 beg_frame, end_frame = item['annotation_Filip_bvh_frame']
                 tmp_akt_traj = tmp_trajectory[beg_frame - _surrs[0]:end_frame + _surrs[1], _channels]
                 ret_list.append(tmp_akt_traj)

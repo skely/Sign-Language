@@ -1,25 +1,29 @@
 import json
 
 
-def read_raw(_in_file):
+def read_raw(_in_file, dictionary_type):
     """
     Reads json dictionary file.
     :param _in_file: path to dictionary file
-    :return: list of dictionaries items
+    :_dictionary_type: 'dictionary_items' or 'dictionary_takes'
+    :return: list of dictionary items
     """
     with open(_in_file, 'r') as f:
         _dict = json.load(f)
-    return _dict
+
+    if dictionary_type == 'dictionary_takes':
+        return _dict['dictionary_takes']
+    elif dictionary_type == 'dictionary_items':
+        return _dict['dictionary_items']
 
 
-def read_valid(_in_file):
+def read_valid(_in_file, dictionary_type):
     """
     Reads json dictionary file and returns valid items only (annotation flag-wise)
     :param _in_file: path to dictionary
     :return: list of dictionary items
     """
-    with open(_in_file, 'r') as f:
-        _dict = json.load(f)
+    _dict = read_raw(_in_file, dictionary_type)
     _dict = [i for i in _dict if i['annotation_flag'] == 1]
     return _dict
 
@@ -30,8 +34,9 @@ def save_dict(_file, _dictionary):
     :param _file: path to dictionary file
     :param _dictionary: list of dictionary items
     """
-    with open(_file, 'w') as jf:
-        json.dump(_dictionary, jf)
+    json_dict = json.dumps(_dictionary)
+    with open(_file, 'w') as f:
+        f.write(json_dict)
 
 
 def search_dict_sign(_dict_file, _sign_id):
@@ -41,12 +46,12 @@ def search_dict_sign(_dict_file, _sign_id):
     :param _sign_id: sign_id
     :return: sign info (dict)
     """
-    _dict = read_raw(_dict_file)
+    _dict = read_raw(_dict_file, 'dictionary_items')
     _item = {}
     for _item in _dict:
         if _item['sign_id'] == _sign_id:
-            break
-    return _item
+            return _item
+    return {}
 
 
 def search_take_file(_dict_file, _take_file):
@@ -56,10 +61,10 @@ def search_take_file(_dict_file, _take_file):
     :param _take_file: name of searched take
     :return: list of items in take
     """
-    _dict = read_raw(_dict_file)
+    _dict = read_raw(_dict_file, 'dictionary_takes')
     ret_list = []
     for _item in _dict:
-        if _item['src_pattern'] in _take_file:
+        if _item['src_video'] in _take_file:
             ret_list.append(_item)
     return ret_list
 
@@ -71,7 +76,7 @@ def search_take_sign(_dict_file, _sign_id):
     :param _sign_id: sign_id
     :return: list of items
     """
-    _dict = read_raw(_dict_file)
+    _dict = read_raw(_dict_file, 'dictionary_takes')
     ret_list = []
     for _item in _dict:
         if _item['sign_id'] == _sign_id:
