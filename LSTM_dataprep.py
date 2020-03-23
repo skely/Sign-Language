@@ -8,7 +8,8 @@ import matplotlib.pyplot as plt
 source_dir = '/home/jedle/data/Sign-Language/_source_clean/'
 bvh_dir = '/home/jedle/data/Sign-Language/_source_clean/bvh/'
 bvh_src_file = '/home/jedle/data/Sign-Language/_source_clean/bvh/16_05_20_a_R.bvh'
-take_dict_file = os.path.join(source_dir, 'dictionary_takes_v3.txt')
+take_dict_file = os.path.join(source_dir, 'ultimate_dictionary2.txt')
+# dict_dict_file = os.path.join(source_dir, 'dictionary_dict_v4.txt')
 # dict_dict_file = os.path.join(source_dir, 'dictionary_dict_v4.txt')
 prepared_data_file = os.path.join(source_dir, 'prepared_data.npz')
 

@@ -12,15 +12,13 @@ def read_raw(_in_file):
     return _dict
 
 
-def read_dictionary(_in_file, dictionary_type):
+def read_dictionary(_dict, dictionary_type):
     """
     Reads json dictionary file.
-    :param _in_file: path to dictionary file
+    :param _dict: dictionary from read_raw
     :_dictionary_type: 'dictionary_items' or 'dictionary_takes'
     :return: list of dictionary items
     """
-    with open(_in_file, 'r') as f:
-        _dict = json.load(f)
 
     if dictionary_type == 'dictionary_takes':
         return _dict['dictionary_takes']
@@ -28,14 +26,13 @@ def read_dictionary(_in_file, dictionary_type):
         return _dict['dictionary_items']
 
 
-def read_valid(_in_file, dictionary_type):
+def read_valid(_dict, dictionary_type):
     """
     Reads json dictionary file and returns valid items only (annotation flag-wise)
-    :param _in_file: path to dictionary
+    :param _dict: dictionary from read_raw
     :return: list of dictionary items
     """
-    _dict = read_dictionary(_in_file, dictionary_type)
-    _dict = [i for i in _dict if i['annotation_flag'] == 1]
+    _dict = [i for i in _dict[dictionary_type] if i['annotation_flag'] == 1]
     return _dict
 
 
@@ -50,14 +47,14 @@ def save_dict(_file, _dictionary):
         f.write(json_dict)
 
 
-def search_dict_sign(_dict_file, _sign_id, _pattern=False):
+def search_dict_sign(_dict, _sign_id, _pattern=False):
     """
     search dictionary items for given sign_id
-    :param _dict_file: path to dictionary file
+    :param _dict: dictionary from read_raw
     :param _sign_id: sign_id
     :return: sign info (dict)
     """
-    _dict = read_dictionary(_dict_file, 'dictionary_items')
+    _dict = read_dictionary(_dict, 'dictionary_items')
     ret_list = []
     for _item in _dict:
         if _pattern:
@@ -70,14 +67,14 @@ def search_dict_sign(_dict_file, _sign_id, _pattern=False):
     return ret_list
 
 
-def search_take_file(_dict_file, _take_file):
+def search_take_file(_dict, _take_file):
     """
     search annotations for take file.
-    :param _dict_file: path to "takes annotation" file
+    :param _dict: dictionary from read_raw
     :param _take_file: name of searched take
     :return: list of items in take
     """
-    _dict = read_dictionary(_dict_file, 'dictionary_takes')
+    _dict = read_dictionary(_dict, 'dictionary_takes')
     ret_list = []
     for _item in _dict:
         if _item['src_video'] in _take_file:
@@ -85,17 +82,17 @@ def search_take_file(_dict_file, _take_file):
     return ret_list
 
 
-def search_take_sign(_dict_file, _sign_id, _pattern=False):
+def search_take_sign(_dict, _sign_id, _pattern=False):
     """
     search for sign_id in all takes annotation
-    :param _dict_file: path to "takes annotation" file
+    :param _dict: dictionary from read_raw
     :param _sign_id: sign_id
     :param _pattern: search for substring
     :return: list of items
     """
-    _dict = read_dictionary(_dict_file, 'dictionary_takes')
+    sel_dict = read_dictionary(_dict, 'dictionary_takes')
     ret_list = []
-    for _item in _dict:
+    for _item in sel_dict:
         if _pattern:
             if _sign_id in _item['sign_id']:
                 ret_list.append(_item)
