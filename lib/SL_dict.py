@@ -1,7 +1,7 @@
 import json
 
 
-def read_raw(_in_file, dictionary_type):
+def read_raw(_in_file):
     """
     Reads raw data from dictionary file.
     :param _in_file: path
