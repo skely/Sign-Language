@@ -36,10 +36,12 @@ def test_loss_comparison(_log_dir):
         tmp = os.path.join(_log_dir, item)
         if os.path.isdir(tmp):
             print(tmp)
-            logfile = os.path.join(tmp, 'losses.txt')
-            log = read_logfile(logfile)
-            sort_results_by_loss(log)
-
+            try:
+                logfile = os.path.join(tmp, 'losses.txt')
+                log = read_logfile(logfile)
+                sort_results_by_loss(log)
+            finally:
+                print('losses.txt not found.' )
 
 if __name__ == '__main__':
     tmp_dir = '/home/jedle/data/Sign-Language/_source_clean/testing/'
