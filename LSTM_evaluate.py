@@ -40,7 +40,7 @@ def test_loss_comparison(_log_dir):
                 logfile = os.path.join(tmp, 'losses.txt')
                 log = read_logfile(logfile)
                 sort_results_by_loss(log)
-            finally:
+            except:
                 print('losses.txt not found.' )
 
 if __name__ == '__main__':
