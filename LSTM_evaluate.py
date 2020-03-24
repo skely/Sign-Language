@@ -16,7 +16,7 @@ def sort_results_by_loss(_log):
     epochs = []
     loss = []
     val_loss = []
-    for l in log:
+    for l in _log:
         # print(l)
         kernels.append(l['kernels'])
         epochs.append(l['epochs'])
@@ -30,16 +30,17 @@ def sort_results_by_loss(_log):
         print('{:<10} {:<10} {:<10.5f} {:<10.5f}'.format(kernels[i], epochs[i], loss[i], val_loss[i]))
 
 
-if __name__ == '__main__':
-    log_dir = '/home/jedle/data/Sign-Language/_source_clean/testing/'
-    dirlist = os.listdir(log_dir)
+def test_loss_comparison(_log_dir):
+    dirlist = os.listdir(_log_dir)
     for item in dirlist:
-        tmp = os.path.join(log_dir, item)
+        tmp = os.path.join(_log_dir, item)
         if os.path.isdir(tmp):
             print(tmp)
             logfile = os.path.join(tmp, 'losses.txt')
-    # print(dirlist)
-    # logfile = '/home/jedle/data/Sign-Language/_source_clean/testing/test_v1/losses.txt'
-
             log = read_logfile(logfile)
             sort_results_by_loss(log)
+
+
+if __name__ == '__main__':
+    tmp_dir = '/home/jedle/data/Sign-Language/_source_clean/testing/'
+    test_loss_comparison(tmp_dir)
