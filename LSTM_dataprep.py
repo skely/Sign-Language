@@ -11,14 +11,14 @@ bvh_src_file = '/home/jedle/data/Sign-Language/_source_clean/bvh/16_05_20_a_R.bv
 dict_file = os.path.join(source_dir, 'ultimate_dictionary2.txt')
 # take_dict_file = os.path.join(source_dir, 'dictionary_takes_v3.txt')
 # dict_dict_file = os.path.join(source_dir, 'dictionary_dict_v4.txt')
-prepared_data_file = os.path.join(source_dir, 'prepared_data.npz')
+prepared_data_file = os.path.join(source_dir, 'prepared_data_30-30.npz')
 
 m, c, _ = BVH.get_joint_list(bvh_src_file)
 selected_sign_id = ''  # transitions
 selected_sign_name = 'tra.'
 # selected_file = '16_05_20_a_R.bvh'
 selected_channels = 'rotation'  # kanály obsahující pouze rotace
-surroundings = [20, 20]
+surroundings = [30, 30]
 transition_length = 37
 random_seed = 9
 train_test_ratio = 0.2
