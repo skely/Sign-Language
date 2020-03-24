@@ -97,11 +97,12 @@ def train_LSTM(_datafile, _output_dir, _LSTM_kernels, _epochs):
 
 
 if __name__ == '__main__':
-    set_epochs = [200, 500, 1000]
-    set_kernels = [100, 200, 500]
+    set_epochs = [5]
+    set_kernels = [5]
 
     source_dir = '/home/jedle/data/Sign-Language/_source_clean/testing'
-    prepared_data_file = os.path.join(source_dir, 'prepared_data.npz')
+    # prepared_data_file = os.path.join(source_dir, 'prepared_data.npz')
+    prepared_data_file = os.path.join(source_dir, 'prepared_data_30-30.npz')
     logfile = os.path.join(source_dir, 'losses.txt')
     NN_type = 'train_LSTM'
     NN_function = globals()[NN_type]

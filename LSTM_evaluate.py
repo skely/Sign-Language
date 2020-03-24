@@ -31,7 +31,15 @@ def sort_results_by_loss(_log):
 
 
 if __name__ == '__main__':
-    logfile = '/home/jedle/data/Sign-Language/_source_clean/testing/test_v1/losses.txt'
+    log_dir = '/home/jedle/data/Sign-Language/_source_clean/testing/'
+    dirlist = os.listdir(log_dir)
+    for item in dirlist:
+        tmp = os.path.join(log_dir, item)
+        if os.path.isdir(tmp):
+            print(tmp)
+            logfile = os.path.join(tmp, 'losses.txt')
+    # print(dirlist)
+    # logfile = '/home/jedle/data/Sign-Language/_source_clean/testing/test_v1/losses.txt'
 
-    log = read_logfile(logfile)
-    sort_results_by_loss(log)
+            log = read_logfile(logfile)
+            sort_results_by_loss(log)
