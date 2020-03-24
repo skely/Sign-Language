@@ -19,7 +19,8 @@ def mine_sign_trajectories(_bvh_src_path, _dict_take_file, _surroundings, _sign_
     else:
         _surrs = _surroundings
 
-    ret = SL_dict.search_take_sign(_dict_take_file, _sign_id)
+    _dict = SL_dict.read_raw(_dict_take_file)
+    ret = SL_dict.search_take_sign(_dict, _sign_id)
     sign_meta_list = []
     if _sign_id != '':
         sign_meta_list = ret
