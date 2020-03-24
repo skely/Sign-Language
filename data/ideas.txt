@@ -1,0 +1,3 @@
+(tool for manual edit added) Synchronizovat název pro snezi-nesnezi-snezi/snezit-nesnezit-snezit
+(done) Synchronizovat src_pattern (dict i takes) - aby se dal použít jeden a ten samý kód pro vytažení dat
+(tool for manual edit added) dict_takes: vychytat chyby z anotace - diakritika apod. 

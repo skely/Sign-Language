@@ -8,16 +8,17 @@ import matplotlib.pyplot as plt
 source_dir = '/home/jedle/data/Sign-Language/_source_clean/'
 bvh_dir = '/home/jedle/data/Sign-Language/_source_clean/bvh/'
 bvh_src_file = '/home/jedle/data/Sign-Language/_source_clean/bvh/16_05_20_a_R.bvh'
-take_dict_file = os.path.join(source_dir, 'dictionary_takes_v3.txt')
+dict_file = os.path.join(source_dir, 'ultimate_dictionary2.txt')
+# take_dict_file = os.path.join(source_dir, 'dictionary_takes_v3.txt')
 # dict_dict_file = os.path.join(source_dir, 'dictionary_dict_v4.txt')
-prepared_data_file = os.path.join(source_dir, 'prepared_data.npz')
+prepared_data_file = os.path.join(source_dir, 'prepared_data_30-30.npz')
 
 m, c, _ = BVH.get_joint_list(bvh_src_file)
 selected_sign_id = ''  # transitions
 selected_sign_name = 'tra.'
 # selected_file = '16_05_20_a_R.bvh'
 selected_channels = 'rotation'  # kanály obsahující pouze rotace
-surroundings = [20, 20]
+surroundings = [30, 30]
 transition_length = 37
 random_seed = 9
 train_test_ratio = 0.2
@@ -26,7 +27,7 @@ train_test_ratio = 0.2
 prep = True
 if prep:
     ch_sel_idxs = BVH.get_joint_id(m, c, '', _channel_name=selected_channels)
-    ret, _ = data_prep.mine_sign_trajectories(bvh_dir, take_dict_file, _surroundings=surroundings, _sign_id=selected_sign_id, _sign_name=selected_sign_name, _channels=ch_sel_idxs, _verbose=True)
+    ret, _ = data_prep.mine_sign_trajectories(bvh_dir, dict_file, _surroundings=surroundings, _sign_id=selected_sign_id, _sign_name=selected_sign_name, _channels=ch_sel_idxs, _verbose=True)
 
     item_list = []
     for item in ret:

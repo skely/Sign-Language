@@ -1,0 +1,14 @@
+casove_udaje_01	yes	83	384
+casove_udaje_02	yes	59	296
+ciselne_hodnoty_01	yes	153	811
+ciselne_hodnoty_02	yes	28	535
+ciselne_hodnoty_03	yes	77	416
+ciselne_hodnoty_04	yes	44	325
+ciselne_hodnoty_05	yes	51	329
+ciselne_hodnoty_06	yes	83	452
+mista_01	yes	57	407
+mista_02	yes	74	290
+ostatni_01	yes	41	301
+ostatni_02	yes	41	314
+ostatni_03	split_1	41	294
+ostatni_03	split_2	
