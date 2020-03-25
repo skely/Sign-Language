@@ -39,9 +39,13 @@ def get_values(_query, _verbose=True):
 
 if __name__ == '__main__':
     BVH_file = '/home/jedle/data/Sign-Language/_source_clean/bvh/16_05_29_c_FR.bvh'
-    names, channels, offsets = BVH.get_joint_list(BVH_file)
-    trajectory = BVH.load_trajectory(BVH_file)
+    # names, channels, offsets = BVH.get_joint_list(BVH_file)
+    # trajectory = BVH.load_trajectory(BVH_file)
     header = BVH.load_raw_header((BVH_file))
+    new_joint_list = BVH.get_tree_structure_joint_list(header)
+    print(BVH.get_ancestor('Spine', new_joint_list))
+    print(BVH.get_ancestor('Hips', new_joint_list))
+    print(BVH.get_children('RightHand', new_joint_list))
 
-    BVH.get_tree_structure(header)
-
+    print(BVH.get_all_ancestors('Hips', new_joint_list))
+    print(BVH.get_all_children('RightHand', new_joint_list))
