@@ -224,7 +224,7 @@ if __name__ == '__main__':
             # print(BVH_tools.get_joint_id(joint_list[0], joint_list[1], joint_list[0][i_joint]))
             if joint_list[0][i_joint] == 'Hips':
                 parent_position = np.zeros([len(joint_list[2][i_joint])])
-                parent_rot_pos = np.zeros([3,3])
+                parent_rot_pos = np.zeros([3])
             else:
                 parent_position = position_per_joint[get_parent_name(joint_list[0][i_joint], header)]
                 parent_rot_pos = pos_rot_per_joint[get_parent_name(joint_list[0][i_joint], header)]
@@ -272,19 +272,19 @@ if __name__ == '__main__':
                 # print(Rz)
                 rotation_matrix = np.dot(np.dot(Rz, Ry), Rx)
                 # print(np.dot(rotation_matrix, joint_offset))
-                rotation_position = np.dot(parent_rot_pos, joint_offset)
+                rotation_position = np.dot(rotation_matrix, joint_offset)
             else:
                 print('DOES NOT HAVE ROTATION')
 
             print('Offset: {} Position(from data): {} Rotation position (from offset): {} Rotation(from data): {}'.format(
-                joint_offset, list(position_from_data), list(rotation_position), list(rotation_from_data)))
-            final_position = parent_position  + position_from_data + rotation_position
+                joint_offset, list(position_from_data), list(parent_rot_pos), list(rotation_from_data)))
+            final_position = parent_position + joint_offset + position_from_data + parent_rot_pos
             print('Parent:', parent_position)
             print('Diff:  {}'.format(np.linalg.norm(final_position - parent_position)))
             print('Len:   {}'.format(joint_len))
             print('Ratio: {}'.format(np.linalg.norm(final_position - parent_position)/joint_len))
             position_per_joint[joint_name] = final_position
-            pos_rot_per_joint[joint_name] = rotation_matrix
+            pos_rot_per_joint[joint_name] = rotation_position
             print('Final position: {}'.format(final_position))
             print()
             ax.scatter(final_position[0], final_position[1], final_position[2], color='blue')
