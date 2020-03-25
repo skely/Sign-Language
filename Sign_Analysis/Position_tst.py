@@ -49,21 +49,23 @@ def load_data(_raw_data):
     _tst = _data_list[0].strip().split(' ')
     if _tst[0] == '':
         padding = 1
-        data_matrix = np.zeros((len(_data_list), len(_data_list[0].split(' '))-1))  # (frames, coordinates(x1, y1, z1, rx1, ry1, rz1, rx2, rx3, ...)
+        data_matrix = np.zeros((len(_data_list), len(
+            _data_list[0].split(' ')) - 1))  # (frames, coordinates(x1, y1, z1, rx1, ry1, rz1, rx2, rx3, ...)
     else:
         padding = 0
-        data_matrix = np.zeros((len(_data_list), len(_data_list[0].split(' '))))  # (frames, coordinates(x1, y1, z1, rx1, ry1, rz1, rx2, rx3, ...)
+        data_matrix = np.zeros((len(_data_list), len(
+            _data_list[0].split(' '))))  # (frames, coordinates(x1, y1, z1, rx1, ry1, rz1, rx2, rx3, ...)
     for i in range(len(_data_list)):
         _temp = _data_list[i].split(' ')
         if padding:
-            for j in range(len(_temp)-1):
-                data_matrix[i, j] = float(_temp[j+1])
+            for j in range(len(_temp) - 1):
+                data_matrix[i, j] = float(_temp[j + 1])
         else:
             for j in range(len(_temp)):
                 data_matrix[i, j] = float(_temp[j])
 
-
     return data_matrix, _header
+
 
 def explain_header(_header):
     """
@@ -79,20 +81,22 @@ def explain_header(_header):
             _marker_info = {}
             # if not _data_header[_idx].startswith('ROOT'):
             # print(_data_header[_idx].split(' '))
-                # _marker_info['parent'] = _data_header[_idx-4].split(' ')[1]
+            # _marker_info['parent'] = _data_header[_idx-4].split(' ')[1]
             _marker_info['m_name'] = _data_header[_idx].split(' ')[1]
-            if _data_header[_idx+1] == '{' and _data_header[_idx+2].startswith('OFFSET'):
-                _marker_info['offset'] = [_data_header[_idx+2].split(' ')[1], _data_header[_idx+2].split(' ')[2], _data_header[_idx+2].split(' ')[3]]
+            if _data_header[_idx + 1] == '{' and _data_header[_idx + 2].startswith('OFFSET'):
+                _marker_info['offset'] = [_data_header[_idx + 2].split(' ')[1],
+                                          _data_header[_idx + 2].split(' ')[2],
+                                          _data_header[_idx + 2].split(' ')[3]]
             else:
                 print('Invalid BVH structure: OFFSET')
                 _marker_info['offset'] = -1
-            if _data_header[_idx+1] == '{' and _data_header[_idx+3].startswith('CHANNELS'):
-                _marker_info['ch_count'] = int(_data_header[_idx+3].split(' ')[1])
+            if _data_header[_idx + 1] == '{' and _data_header[_idx + 3].startswith('CHANNELS'):
+                _marker_info['ch_count'] = int(_data_header[_idx + 3].split(' ')[1])
                 _ch_names = []
-                for _i, _channel_attribute in enumerate(_data_header[_idx+3].split(' ')):
+                for _i, _channel_attribute in enumerate(_data_header[_idx + 3].split(' ')):
                     if _i < 2:
                         continue
-                    _ch_names.append(_data_header[_idx+3].split(' ')[_i])
+                    _ch_names.append(_data_header[_idx + 3].split(' ')[_i])
                 _marker_info['ch_names'] = _ch_names
             else:
                 print('Invalid BVH structure: CHANNELS')
@@ -101,7 +105,7 @@ def explain_header(_header):
             _joints = []
             _children = []
             _brac_count = 0
-            for _i, _line in enumerate(_data_header[_idx+1:]):
+            for _i, _line in enumerate(_data_header[_idx + 1:]):
                 if _line.startswith('{'):
                     _brac_count += 1
                 elif _line.startswith('}'):
@@ -209,6 +213,7 @@ if __name__ == '__main__':
     print(get_parent_name('LeftShoulder', header))
     for frame in range(np.size(working_trajectory, 0)):
         position_per_joint = {}
+        pos_rot_per_joint = {}
         for i_joint, joint in enumerate(joint_list[0]):
             if len(joint_list[2][i_joint]) != 3:
                 print('FATAL ERROR')
@@ -223,10 +228,10 @@ if __name__ == '__main__':
             # print(BVH_tools.get_joint_id(joint_list[0], joint_list[1], joint_list[0][i_joint]))
             if joint_list[0][i_joint] == 'Hips':
                 parent_position = np.zeros([len(joint_list[2][i_joint])])
-                prev_rot = np.zeros([3,3])
+                parent_rot_pos = np.zeros([3, 3])
             else:
                 parent_position = position_per_joint[get_parent_name(joint_list[0][i_joint], header)]
-                prev_rot = rotation_matrix
+                parent_rot_pos = pos_rot_per_joint[get_parent_name(joint_list[0][i_joint], header)]
 
             position_from_data = np.zeros([3])
             if 'Xposition' in joint_list[1][i_joint]:
@@ -251,9 +256,11 @@ if __name__ == '__main__':
                 rotation_from_data[2] = working_trajectory[frame, rot_z]
 
                 joint_ids = BVH_tools.get_joint_id(joint_list[0], joint_list[1], joint_list[0][i_joint])
-                joint_len = np.sqrt(np.power(joint_offset[0], 2)+np.power(joint_offset[1], 2)+np.power(joint_offset[2], 2))
+                joint_len = np.sqrt(
+                    np.power(joint_offset[0], 2) + np.power(joint_offset[1], 2) + np.power(joint_offset[2], 2))
 
-                # rotation_from_data += 90
+                rotation_from_data += 90
+
                 alpha = rotation_from_data[2]
                 beta = rotation_from_data[1]
                 gamma = rotation_from_data[0]
@@ -266,23 +273,22 @@ if __name__ == '__main__':
                                np.sin(alpha) * np.sin(beta) * np.cos(gamma) - np.cos(alpha) * np.sin(gamma)],
                               [-np.sin(beta), np.cos(beta) * np.sin(gamma), np.cos(beta) * np.cos(gamma)]])
 
-                # print(Rx)
-                # print(Ry)
-                # print(Rz)
                 rotation_matrix = R
                 # print(np.dot(rotation_matrix, joint_offset))
-                rotation_position = np.dot(rotation_matrix, joint_offset)
+                rotation_position = np.dot(parent_rot_pos, joint_offset)
             else:
                 print('DOES NOT HAVE ROTATION')
 
-            print('Offset: {} Position(from data): {} Rotation position (from offset): {} Rotation(from data): {}'.format(
-                joint_offset, list(position_from_data), list(rotation_position), list(rotation_from_data)))
-            final_position = parent_position  + position_from_data + rotation_position
+            print(
+                'Offset: {} Position(from data): {} Rotation position (from offset): {} Rotation(from data): {}'.format(
+                    joint_offset, list(position_from_data), list(rotation_position), list(rotation_from_data)))
+            final_position = parent_position + position_from_data + rotation_position
             print('Parent:', parent_position)
             print('Diff:  {}'.format(np.linalg.norm(final_position - parent_position)))
             print('Len:   {}'.format(joint_len))
-            print('Ratio: {}'.format(np.linalg.norm(final_position - parent_position)/joint_len))
+            print('Ratio: {}'.format(np.linalg.norm(final_position - parent_position) / joint_len))
             position_per_joint[joint_name] = final_position
+            pos_rot_per_joint[joint_name] = rotation_matrix
             print('Final position: {}'.format(final_position))
             print()
             ax.scatter(final_position[0], final_position[1], final_position[2], color='blue')

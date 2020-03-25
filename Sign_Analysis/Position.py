@@ -209,6 +209,7 @@ if __name__ == '__main__':
     print(get_parent_name('LeftShoulder', header))
     for frame in range(np.size(working_trajectory, 0)):
         position_per_joint = {}
+        pos_rot_per_joint = {}
         for i_joint, joint in enumerate(joint_list[0]):
             if len(joint_list[2][i_joint]) != 3:
                 print('FATAL ERROR')
@@ -223,10 +224,10 @@ if __name__ == '__main__':
             # print(BVH_tools.get_joint_id(joint_list[0], joint_list[1], joint_list[0][i_joint]))
             if joint_list[0][i_joint] == 'Hips':
                 parent_position = np.zeros([len(joint_list[2][i_joint])])
-                prev_rot = np.zeros([3,3])
+                parent_rot_pos = np.zeros([3,3])
             else:
                 parent_position = position_per_joint[get_parent_name(joint_list[0][i_joint], header)]
-                prev_rot = rotation_matrix
+                parent_rot_pos = pos_rot_per_joint[get_parent_name(joint_list[0][i_joint], header)]
 
             position_from_data = np.zeros([3])
             if 'Xposition' in joint_list[1][i_joint]:
@@ -253,7 +254,7 @@ if __name__ == '__main__':
                 joint_ids = BVH_tools.get_joint_id(joint_list[0], joint_list[1], joint_list[0][i_joint])
                 joint_len = np.sqrt(np.power(joint_offset[0], 2)+np.power(joint_offset[1], 2)+np.power(joint_offset[2], 2))
 
-                # rotation_from_data += 90
+                rotation_from_data += 90
 
                 Rx = np.array([[1, 0, 0],
                                [0, np.cos(rotation_from_data[0] * np.pi/180), -np.sin(rotation_from_data[0] * np.pi/180)],
@@ -271,7 +272,7 @@ if __name__ == '__main__':
                 # print(Rz)
                 rotation_matrix = np.dot(np.dot(Rz, Ry), Rx)
                 # print(np.dot(rotation_matrix, joint_offset))
-                rotation_position = np.dot(rotation_matrix, joint_offset)
+                rotation_position = np.dot(parent_rot_pos, joint_offset)
             else:
                 print('DOES NOT HAVE ROTATION')
 
@@ -283,6 +284,7 @@ if __name__ == '__main__':
             print('Len:   {}'.format(joint_len))
             print('Ratio: {}'.format(np.linalg.norm(final_position - parent_position)/joint_len))
             position_per_joint[joint_name] = final_position
+            pos_rot_per_joint[joint_name] = rotation_matrix
             print('Final position: {}'.format(final_position))
             print()
             ax.scatter(final_position[0], final_position[1], final_position[2], color='blue')
