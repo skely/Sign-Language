@@ -45,4 +45,13 @@ def test_loss_comparison(_log_dir):
 
 if __name__ == '__main__':
     tmp_dir = '/home/jedle/data/Sign-Language/_source_clean/testing/'
-    test_loss_comparison(tmp_dir)
+    # test_loss_comparison(tmp_dir)
+    data_file = '/home/jedle/data/Sign-Language/_source_clean/testing/prepared_data.npz'
+    data = np.load(data_file)
+    train_X = data['train_X']
+    train_Y = data['train_Y']
+
+    plt.plot(train_X[0, :, 20])
+    plt.plot(train_Y[0, :, 20])
+    plt.show()
+
