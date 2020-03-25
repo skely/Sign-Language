@@ -41,53 +41,7 @@ if __name__ == '__main__':
     BVH_file = '/home/jedle/data/Sign-Language/_source_clean/bvh/16_05_29_c_FR.bvh'
     names, channels, offsets = BVH.get_joint_list(BVH_file)
     trajectory = BVH.load_trajectory(BVH_file)
+    header = BVH.load_raw_header((BVH_file))
 
-    frame_number = 0
-    frame_trajectory = trajectory[frame_number, :]
-
-    # ****************************************************
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d')
-    unisize = 10
-    last_position = [0, 0, 0]
-    for name in names[:4]:
-        query = name
-        offset, rotation, position = get_values(query)
-        abs_position = last_position + make_rotation(rotation, offset)
-        # abs_position = offset
-        print('Absolute position {}'.format(abs_position))
-        ax.scatter(abs_position[0], abs_position[1], abs_position[2], label=query)
-        last_position = abs_position.copy()
-
-
-    ax.set_xlabel('X Label')
-    ax.set_ylabel('Y Label')
-    ax.set_zlabel('Z Label')
-    ax.set_xlim3d(-unisize, unisize)
-    ax.set_ylim3d(-unisize, unisize)
-    ax.set_zlim3d(-unisize, unisize)
-    ax.legend()
-    plt.show()
-
-    #         x, y, z
-    offset = [0, 1, 0]
-    offset2 = [-1, 0, 0]
-    offset3 = [1, 0, 0]
-    # #            z, y, x
-    rotations1 = [0, 0, 0]
-    rotations2 = [0, 0, 0]
-    rotations3 = [0, 0, 0]
-    #
-    rot_rad1 = np.deg2rad(rotations1)
-    rot_rad2 = np.deg2rad(rotations2)
-    rot_rad3 = np.deg2rad(rotations3)
-    #
-    result = make_rotation(offset, rot_rad1)
-    print('{:.2f}, {:.2f}, {:.2f}'.format(result[0], result[1], result[2]))
-    result2 = result  + make_rotation(rot_rad2, offset2)
-    print('{:.2f}, {:.2f}, {:.2f}'.format(result2[0], result2[1], result2[2]))
-    result3 = result2  + make_rotation(rot_rad3, offset3)
-    print('{:.2f}, {:.2f}, {:.2f}'.format(result3[0], result3[1], result3[2]))
-    # result4 = result2  + make_rotation(offset3, rot_rad3)
-    # print('{:.2f}, {:.2f}, {:.2f}'.format(result4[0], result4[1], result4[2]))
+    BVH.get_tree_structure(header)
 

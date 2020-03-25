@@ -116,7 +116,8 @@ def get_tree_structure(_raw_header):
     :param _raw_header:
     :return: list of joints [joint_name, parent, [children]]
     """
-
+    for line in _raw_header:
+        print(line)
 
 def get_ancester(_joint_name, _tree_structure):
     """
