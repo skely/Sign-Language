@@ -254,22 +254,22 @@ if __name__ == '__main__':
                 joint_len = np.sqrt(np.power(joint_offset[0], 2)+np.power(joint_offset[1], 2)+np.power(joint_offset[2], 2))
 
                 # rotation_from_data += 90
+                alpha = rotation_from_data[2]
+                beta = rotation_from_data[1]
+                gamma = rotation_from_data[0]
 
-                Rx = np.array([[1, 0, 0],
-                               [0, np.cos(rotation_from_data[0] * np.pi/180), -np.sin(rotation_from_data[0] * np.pi/180)],
-                               [0, np.sin(rotation_from_data[0] * np.pi/180), np.cos(rotation_from_data[0] * np.pi/180)]])
+                R = np.array([[np.cos(alpha) * np.cos(beta),
+                               np.cos(alpha) * np.sin(beta) * np.sin(gamma) - np.sin(alpha) * np.cos(gamma),
+                               np.cos(alpha) * np.sin(beta) * np.cos(gamma) + np.sin(alpha) * np.sin(gamma)],
+                              [np.sin(alpha) * np.cos(beta),
+                               np.sin(alpha) * np.sin(beta) * np.sin(gamma) + np.cos(alpha) * np.cos(gamma),
+                               np.sin(alpha) * np.sin(beta) * np.cos(gamma) - np.cos(alpha) * np.sin(gamma)],
+                              [-np.sin(beta), np.cos(beta) * np.sin(gamma), np.cos(beta) * np.cos(gamma)]])
 
-                Ry = np.array([[np.cos(rotation_from_data[1] * np.pi/180), 0, np.sin(rotation_from_data[1] * np.pi/180)],
-                               [0, 1, 0],
-                               [-np.sin(rotation_from_data[1] * np.pi/180), 0, np.cos(rotation_from_data[1] * np.pi/180)]])
-
-                Rz = np.array([[np.cos(rotation_from_data[2] * np.pi/180), -np.sin(rotation_from_data[2] * np.pi/180), 0],
-                               [np.sin(rotation_from_data[2] * np.pi/180), np.cos(rotation_from_data[2] * np.pi/180), 0],
-                               [0, 0, 1]])
                 # print(Rx)
                 # print(Ry)
                 # print(Rz)
-                rotation_matrix = np.dot(np.dot(Rz, Ry), Rx)
+                rotation_matrix = R
                 # print(np.dot(rotation_matrix, joint_offset))
                 rotation_position = np.dot(rotation_matrix, joint_offset)
             else:
