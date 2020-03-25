@@ -2,6 +2,11 @@ import numpy as np
 
 
 def load_raw(_in_file):
+    """
+    Loads bvh file as text.
+    :param _in_file: path
+    :return: list of lines
+    """
     with open(_in_file, 'r') as f:
         content = f.readlines()
 
@@ -14,6 +19,11 @@ def load_raw(_in_file):
 
 
 def load_trajectory(_in_file):
+    """
+    Loads trajectory from BVH file.
+    :param _in_file: path
+    :return: numpy array [time, features]
+    """
     _, _raw_trajectory = load_raw(_in_file)
 
     _trajectory = []
@@ -26,11 +36,21 @@ def load_trajectory(_in_file):
 
 
 def load_raw_header(_in_file):
+    """
+    Loads header as text.
+    :param _in_file: path
+    :return: list of lines (inc. formatting chars)
+    """
     _raw_header, _ = load_raw(_in_file)
     return _raw_header
 
 
 def get_joint_list(_in_file):
+    """
+    Lists all joints and root names. (In order same as trajectory features, not hierarchy)
+    :param _in_file: path
+    :return: joint name list, channels list, offset
+    """
     _header = load_raw_header(_in_file)
     _marker_list = []
     _channel_list = []
@@ -44,6 +64,15 @@ def get_joint_list(_in_file):
 
 
 def get_joint_id(_marker_list, _channel_list, _joint_name, _channel_name='all'):
+    """
+    Gets joint positions for given channel names (or pattern line 'rotation', 'X', ...)
+    inputs from get_joint_list
+    :param _marker_list: list of joints
+    :param _channel_list: list of channels
+    :param _joint_name: searched joint name
+    :param _channel_name: searched channel name
+    :return:
+    """
     _ret_list = []
     _channel_counter = 0
     for _i, (_m, _c) in enumerate(zip(_marker_list, _channel_list)):
@@ -63,6 +92,13 @@ def get_joint_id(_marker_list, _channel_list, _joint_name, _channel_name='all'):
 
 
 def get_joint_name(_marker_list, _channel_list, _joint_id):
+    """
+    Gets joint name from index. Inputs from get_joint_list
+    :param _marker_list: list of joints
+    :param _channel_list: list of channels
+    :param _joint_id: searched id
+    :return: joint name, channel name
+    """
     index = 0
     for _i, (_m, _ch) in enumerate(zip(_marker_list, _channel_list)):
         index_new = index + len(_channel_list[_i])

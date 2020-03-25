@@ -1,0 +1,3 @@
+Synchronizovat název pro snezi-nesnezi-snezi/snezit-nesnezit-snezit
+Synchronizovat src_pattern (dict i takes) - aby se dal použít jeden a ten samý kód pro vytažení dat
+dict_takes: vychytat chyby z anotace - diakritika apod. 
