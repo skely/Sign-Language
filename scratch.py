@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
 
-def make_rotation(_offset, _rotation):
+def make_rotation(_rotation, _offset):
     alpha, beta, gamma = _rotation  # Z, Y, X
     R = np.array([[np.cos(alpha)*np.cos(beta), np.cos(alpha)*np.sin(beta)*np.sin(gamma) - np.sin(alpha)*np.cos(gamma), np.cos(alpha)*np.sin(beta)*np.cos(gamma) + np.sin(alpha)*np.sin(gamma)],
                   [np.sin(alpha)*np.cos(beta), np.sin(alpha)*np.sin(beta)*np.sin(gamma) + np.cos(alpha)*np.cos(gamma), np.sin(alpha)*np.sin(beta)*np.cos(gamma) - np.cos(alpha)*np.sin(gamma)],
@@ -13,14 +13,13 @@ def make_rotation(_offset, _rotation):
     return R.dot(_offset)
 
 
-def get_rotation_axes_ids(_names, _channels, _joint_name):
+def get_rotation_axes_ids(_names, _channels, _joint_name, order='ZYX'):
     Z = BVH.get_joint_id(_names, _channels, _joint_name, 'Zrotation')[0]
     Y = BVH.get_joint_id(_names, _channels, _joint_name, 'Yrotation')[0]
     X = BVH.get_joint_id(_names, _channels, _joint_name, 'Xrotation')[0]
-    order = [Z, Y, X]
-    # order = [Z, X, Y]
 
-    return order
+    retval = [locals()[order[0]], locals()[order[1]], locals()[order[2]]]
+    return retval
 
 
 def get_values(_query, _verbose=True):
@@ -50,14 +49,16 @@ if __name__ == '__main__':
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
     unisize = 10
-
+    last_position = [0, 0, 0]
     for name in names[:4]:
         query = name
         offset, rotation, position = get_values(query)
-        abs_position = make_rotation(offset, rotation)
+        abs_position = last_position + make_rotation(rotation, offset)
         # abs_position = offset
         print('Absolute position {}'.format(abs_position))
         ax.scatter(abs_position[0], abs_position[1], abs_position[2], label=query)
+        last_position = abs_position.copy()
+
 
     ax.set_xlabel('X Label')
     ax.set_ylabel('Y Label')
@@ -65,8 +66,8 @@ if __name__ == '__main__':
     ax.set_xlim3d(-unisize, unisize)
     ax.set_ylim3d(-unisize, unisize)
     ax.set_zlim3d(-unisize, unisize)
-    # ax.legend()
-    # plt.show()
+    ax.legend()
+    plt.show()
 
     #         x, y, z
     offset = [0, 1, 0]
@@ -83,9 +84,9 @@ if __name__ == '__main__':
     #
     result = make_rotation(offset, rot_rad1)
     print('{:.2f}, {:.2f}, {:.2f}'.format(result[0], result[1], result[2]))
-    result2 = result  + make_rotation(offset2, rot_rad2)
+    result2 = result  + make_rotation(rot_rad2, offset2)
     print('{:.2f}, {:.2f}, {:.2f}'.format(result2[0], result2[1], result2[2]))
-    result3 = result2  + make_rotation(offset3, rot_rad3)
+    result3 = result2  + make_rotation(rot_rad3, offset3)
     print('{:.2f}, {:.2f}, {:.2f}'.format(result3[0], result3[1], result3[2]))
     # result4 = result2  + make_rotation(offset3, rot_rad3)
     # print('{:.2f}, {:.2f}, {:.2f}'.format(result4[0], result4[1], result4[2]))
