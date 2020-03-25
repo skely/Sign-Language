@@ -108,3 +108,38 @@ def get_joint_name(_marker_list, _channel_list, _joint_id):
             break
         index = index_new
     return marker, channel
+
+
+def get_tree_structure(_raw_header):
+    """
+    Parse BVH header to tree structure
+    :param _raw_header:
+    :return: list of joints [joint_name, parent, [children]]
+    """
+
+
+def get_ancester(_joint_name, _tree_structure):
+    """
+    returns name of parent joint
+    :param _joint_name:
+    :param _tree_structure:
+    :return: joint_name of parent
+    """
+
+
+def get_children(_join_name, _tree_structure):
+    """
+    returns list of children joints
+    :param _join_name:
+    :param _tree_structure:
+    :return:
+    """
+
+
+def get_all_children(_join_name, _tree_structure):
+    """
+    returns list of all joints in subtree of the input.
+    :param _join_name:
+    :param _tree_structure:
+    :return:
+    """
