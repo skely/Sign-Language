@@ -50,6 +50,7 @@ if __name__ == '__main__':
     ax = fig.add_subplot(111, projection='3d')
     unisize = 10
     last_position = [0, 0, 0]
+    # TODO: modify loop for ancestor list input -> make_rotation back to Hips -> do it for all joints
     for name in names[:4]:
         query = name
         offset, rotation, position = get_values(query)
