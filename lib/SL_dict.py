@@ -26,7 +26,8 @@ def read_dictionary(_in_file, dictionary_type):
         return _dict['dictionary_takes']
     elif dictionary_type == 'dictionary_items':
         return _dict['dictionary_items']
-
+    else:
+        return _dict
 
 def read_valid(_in_file, dictionary_type):
     """
@@ -80,7 +81,7 @@ def search_take_file(_dict_file, _take_file):
     _dict = read_dictionary(_dict_file, 'dictionary_takes')
     ret_list = []
     for _item in _dict:
-        if _item['src_video'] in _take_file:
+        if _item['src_mocap'] in _take_file:
             ret_list.append(_item)
     return ret_list
 
