@@ -1,21 +1,63 @@
 from lib import BVH
+from BVwHacker import bvh
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
 
 
-def make_rotation(_rotation, _offset, _order='ZYX'):
-    X, Y, Z = _rotation
-    alpha = locals()[_order[0]]
-    beta = locals()[_order[1]]
-    gamma = locals()[_order[2]]
+def make_rotation(_rotation, _offset, _order='XYZ'):
+    """
 
-    R = np.array([[np.cos(alpha)*np.cos(beta), np.cos(alpha)*np.sin(beta)*np.sin(gamma) - np.sin(alpha)*np.cos(gamma), np.cos(alpha)*np.sin(beta)*np.cos(gamma) + np.sin(alpha)*np.sin(gamma)],
-                  [np.sin(alpha)*np.cos(beta), np.sin(alpha)*np.sin(beta)*np.sin(gamma) + np.cos(alpha)*np.cos(gamma), np.sin(alpha)*np.sin(beta)*np.cos(gamma) - np.cos(alpha)*np.sin(gamma)],
-                  [-np.sin(beta), np.cos(beta)*np.sin(gamma), np.cos(beta)*np.cos(gamma)]])
+    :param _rotation:
+    :param _offset:
+    :param _order: order of rotation channels
+    :return:
+    """
+    # if _order == 'XYZ':
+    #     alpha, beta, gamma = _rotation
+    # elif _order == 'XZY':
+    #     alpha, gamma, beta = _rotation
+    # elif _order == 'YXZ':
+    #     beta, alpha, gamma = _rotation
+    # elif _order == 'YZX':
+    #     beta, gamma, alpha = _rotation
+    # elif _order == 'ZXY':
+    #     gamma, alpha, beta  = _rotation
+    # elif _order == 'ZYX':
+    #     gamma, beta, alpha = _rotation
+
+
+    # alpha, beta, gamma = _rotation
+    gamma, beta, alpha = _rotation
+
+    Rz = np.array([[np.cos(gamma), -np.sin(gamma), 0],
+                   [np.sin(gamma), np.cos(gamma), 0],
+                   [0, 0, 1]])
+    Ry = np.array([[np.cos(beta), 0, np.sin(beta)],
+                   [0, 1, 0],
+                   [-np.sin(beta), 0, np.cos(beta)]])
+    Rx = np.array([[1, 0, 0],
+                   [0, np.cos(alpha), -np.sin(alpha)],
+                   [0, np.sin(alpha), np.cos(alpha)]])
+
+    if _order == 'XYZ':
+        R = Rz.dot(Ry).dot(Rx)
+    elif _order == 'XZY':
+        R = Ry.dot(Rz).dot(Rx)
+    elif _order == 'YXZ':
+        R = Rz.dot(Rx).dot(Ry)
+    elif _order == 'YZX':
+        R = Rx.dot(Rz).dot(Ry)
+    elif _order == 'ZXY':
+        R = Ry.dot(Rx).dot(Rz)
+    elif _order == 'ZYX':
+        R = Rx.dot(Ry).dot(Rz)
+    else:
+        print('ERROR: order of rotation channels should by combination of "X", "Y", "Z", not {}'.format(_order))
 
     return R.dot(_offset)
+    # return _offset.transpose().dot(R)
 
 
 def get_rotation_axes_ids(_names, _channels, _joint_name):
@@ -29,8 +71,8 @@ def get_rotation_axes_ids(_names, _channels, _joint_name):
     Z = BVH.get_joint_id(_names, _channels, _joint_name, 'Zrotation')[0]
     Y = BVH.get_joint_id(_names, _channels, _joint_name, 'Yrotation')[0]
     X = BVH.get_joint_id(_names, _channels, _joint_name, 'Xrotation')[0]
-    rotation_idxs = [locals()[tmp_order[0]], locals()[tmp_order[1]], locals()[tmp_order[2]]]
-
+    # rotation_idxs = [locals()[tmp_order[0]], locals()[tmp_order[1]], locals()[tmp_order[2]]]  # rotation vector in original order
+    rotation_idxs = [X, Y, Z]
     return rotation_idxs, tmp_order
 
 
@@ -44,7 +86,7 @@ def get_position_axes_ids(_names, _channels, _joint_name):
     return [X, Y, Z]
 
 
-def get_values(_query, _tree_structure, _frame, _verbose=False):
+def get_values(_query, _tree_structure, _frame, _verbose=True):
     names, channels, offsets, _, _ = _tree_structure
 
     offset = np.asarray(offsets[[i for i, name in enumerate(names) if name == _query][0]], dtype=float)
@@ -61,60 +103,52 @@ def get_values(_query, _tree_structure, _frame, _verbose=False):
     if _verbose:
         print('\n' + _query)
         print('Offset {}'.format(offset))
-        print('Rotation: {}'.format(rotation))
+        print('Rotation: {}, ({})'.format(rotation_deg, rot_order))
         print('Position: {}'.format(position))
 
     return offset, rotation, position, rot_order
 
 
-def calculate_positions(_joint, _tree_structure, _selected_frame, T_pose=False, _rotation_order='ZYX'):
+def calculate_positions(_joint, _tree_structure, _selected_frame, T_pose=False):
     parent_list = BVH.get_all_ancestors(_joint, _tree_structure)[:-1][::-1]
     parent_list.append(_joint)
     # parent_list = parent_list[::-1]
     # print(parent_list)
     last_position = [0, 0, 0]
     last_rotation = [0, 0, 0]
+    last_rot_order = 'XYZ'
     for parent in parent_list:
 
         tmp_offset, tmp_rotation, tmp_position, tmp_order = get_values(parent, _tree_structure, _selected_frame, _verbose=False)
         if T_pose:
             tmp_rotation = [0, 0, 0]
 
+        transformed = last_position + make_rotation(last_rotation, tmp_offset + tmp_position, _order=last_rot_order)  #
 
-        # transformed = last_position + make_rotation(last_rotation, tmp_offset+tmp_position, _order=_rotation_order)
-
-        transformed = last_position + make_rotation(last_rotation, tmp_offset, _order=_rotation_order) + tmp_position
-        # transformed = last_position + make_rotation(last_rotation, tmp_offset, _order=tmp_order[::-1]) + tmp_position
-        # transformed = last_position + make_rotation(last_rotation, tmp_position, _order=_rotation_order) + tmp_offset
-
-
-        # transformed = make_rotation(tmp_rotation, tmp_offset, _order=_rotation_order) + last_position + tmp_position
-
-        # transformed = make_rotation(tmp_rotation, tmp_offset+last_position, _order=_rotation_order) + tmp_position
-        # transformed = make_rotation(tmp_rotation, tmp_offset + last_position + tmp_position, _order=_rotation_order)
-        # transformed = make_rotation(tmp_rotation, tmp_offset+tmp_position, _order=_rotation_order) + last_position
-
+        last_offset = tmp_offset.copy()
         last_position = transformed.copy()  # pro jistotu..
         last_rotation = tmp_rotation.copy()
-
+        last_rot_order = tmp_order
+        # print(parent)
+        # print('position: {}'.format(transformed))
     return last_position
 
 
 def my_colored_plot(_joint):
-    if any(n in joint for n in ['Right']):
+    if any(n in _joint for n in ['Right']):
         m_color = 'r'
-    elif any(n in joint for n in ['Left']):
+    elif any(n in _joint for n in ['Left']):
         m_color = 'b'
     else:
         m_color = 'g'
 
-    if any(n in joint for n in ['1', '2', '3']):  # prsty
+    if any(n in _joint for n in ['1', '2', '3']):  # prsty
         m_shape = '+'
-    elif any(n in joint for n in ['Shoulder']):
+    elif any(n in _joint for n in ['Shoulder']):
         m_shape = 's'
-    elif any(n in joint for n in ['ForeArm']):
+    elif any(n in _joint for n in ['ForeArm']):
         m_shape = 'p'
-    elif any(n in joint for n in ['Arm']):
+    elif any(n in _joint for n in ['Arm']):
         m_shape = 'v'
     else:
         m_shape = '*'
@@ -138,23 +172,31 @@ if __name__ == '__main__':
     frame_number = 1000
     selected_frame = trajectory[frame_number, :]
 
-    rotation_orders = ['ZYX', 'ZXY', 'XYZ', 'XZY', 'YXZ', 'YZX']
-    for rotation_order in rotation_orders:
-        fig = plt.figure()
-        ax = fig.add_subplot(111, projection='3d', title=rotation_order)
-        unisize = 50
+    skeleton = bvh.Skeleton(BVH_file, 1)
+    skeleton.updateFrame(frame_number)
 
-        for joint in joints:
-            result = calculate_positions(joint, tree_structure, selected_frame, T_pose=False, _rotation_order=rotation_order)
-            m_color, m_shape = my_colored_plot(joint)
-            ax.scatter(result[0], result[1], result[2], label=joint, color=m_color, marker=m_shape)
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d', title='frame: {}'.format(frame_number))
+    unisize = 100
 
-        ax.set_xlabel('X Label')
-        ax.set_ylabel('Y Label')
-        ax.set_zlabel('Z Label')
-        ax.set_xlim3d(-unisize, unisize)
-        ax.set_ylim3d(-unisize, unisize)
-        ax.set_zlim3d(-unisize, unisize)
-        # ax.legend()
-        plt.show()
-        # break
+    for joint in joints:
+        my_result = calculate_positions(joint, tree_structure, selected_frame, T_pose=False)
+        j = skeleton.getJoint(joint)
+        result = [j.worldpos[0], j.worldpos[1], j.worldpos[2]]
+
+        print('Joint: {}'.format(joint))
+        print('My result: {}'.format(my_result))
+        print('Correct result: {}'.format(result))
+
+        m_color, m_shape = my_colored_plot(joint)
+        ax.scatter(result[0], result[1], result[2], label=joint, color=m_color, marker=m_shape)
+
+    ax.set_xlabel('X Label')
+    ax.set_ylabel('Y Label')
+    ax.set_zlabel('Z Label')
+    ax.set_xlim3d(-unisize, unisize)
+    ax.set_ylim3d(-unisize, unisize)
+    ax.set_zlim3d(-unisize, unisize)
+    # ax.legend()
+    plt.show()
+    # break
