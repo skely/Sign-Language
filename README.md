@@ -15,6 +15,8 @@ tools for SL MoCap data analysis
 
 `/tests` : contains programs for testing
 
+`/BVwhacker` : borrowed from https://github.com/duststorm/BVwHacker
+
 ---
 
 `/tests/LSTM dataprep.py` : tool for preparing data for LSTM NN. Mining transition with surroundings.
