@@ -2,6 +2,7 @@ import os
 from lib import BVH, SL_dict
 import sys
 import numpy as np
+import fastdtw
 
 
 def mine_sign_trajectories(_bvh_src_path, _dict_take_file, _surroundings, _sign_id='', _sign_name='tra.', _channels=[], _verbose=True):
@@ -149,3 +150,18 @@ def sign_synthesis(_sign_1, _sign_2, _gap_length, _type='cubic'):
     else:
         res = -1
     return res[1:, :]
+
+
+def sign_comparison(_sign_1, _sign_2, _method='dtw_normalized'):
+    """
+    Compares signs by DTW normalized by path length and trajectory count.
+    :param _sign_1: trajectory frames1 X markers
+    :param _sign_2: trajectory frames2 X markers
+    :param _method: only dtw_normalized available.
+    :return: distance
+    """
+    _normalized = None
+    if _method == 'dtw_normalized':
+        _distance, _path = fastdtw.dtw(_sign_1, _sign_2)
+        _normalized = (_distance/len(_path))/np.size(_sign_1, 1)
+    return _normalized
