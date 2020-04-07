@@ -17,11 +17,11 @@ if __name__ == '__main__':
         template_trajectory = BVH.load_trajectory(template_file)
         comparison_trajectory = BVH.load_trajectory(comparison_file)
 
-        comparison, path = data_prep.sign_comparison(template_trajectory[:, :], comparison_trajectory[:, :])
+        comparison = data_prep.sign_comparison(template_trajectory[:, :], comparison_trajectory[:, :])
         print('src_file: {}'.format(file_name))
         data_shape = (np.shape(template_trajectory))
         print('length: {}'.format(data_shape[0]))
-        print('distance: {:.2f}'.format(comparison/data_shape[1]))
+        print('distance: {:.2f}'.format(comparison))
         print('---')
 
         print(np.shape(comparison_trajectory))
