@@ -50,8 +50,8 @@ def sort_results_by_loss(_log):
     return kernels[order[0]], epochs[order[0]]
 
 if __name__ == '__main__':
-    work_dir = '/home/jedle/data/Sign-Language/_source_clean/testing/test_glo_v1/'
-    # work_dir = '/home/jedle/data/Sign-Language/_source_clean/testing/test_v4/'
+    # work_dir = '/home/jedle/data/Sign-Language/_source_clean/testing/test_glo_v1/'
+    work_dir = '/home/jedle/data/Sign-Language/_source_clean/testing/test_v4/'
     log_file = os.path.join(work_dir, 'losses.txt')
     log = read_logfile(log_file)
     top = sort_results_by_loss(log)

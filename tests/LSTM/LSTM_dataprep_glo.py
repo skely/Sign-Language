@@ -59,12 +59,23 @@ def mine_sign_trajectories(_bvh_src_path, _dict_take_file, _surroundings, _sign_
     return ret_list, sign_meta_list
 
 
+def shift_trajectory(_data_X, _data_Y):
+    """
+    Adds vector of zeros on axis 1 (time axis). For data X to the end and for data Y to the beginning
+    """
+    X_shape = np.shape(_data_X)
+    expansion = np.zeros((X_shape[0], 1, X_shape[2]))
+    _shifted_X = np.concatenate((_data_X, expansion), 1)
+    _shifted_Y = np.concatenate((expansion, _data_Y), 1)
+    return _shifted_X, _shifted_Y
+
+
 if __name__ == '__main__':
     source_dir = '/home/jedle/data/Sign-Language/_source_clean/'
     bvh_dir = '/home/jedle/data/Sign-Language/_source_clean/bvh/'
     bvh_src_file = '/home/jedle/data/Sign-Language/_source_clean/bvh/16_05_20_a_R.bvh'
     dict_file = os.path.join(source_dir, 'ultimate_dictionary2.txt')
-    prepared_data_file = os.path.join(source_dir, 'prepared_data_glo_30-30n.npz')
+    prepared_data_file = os.path.join(source_dir, 'prepared_data_glo_30-30ns.npz')
 
     #
     # m, c, _ = BVH.get_joint_list(bvh_src_file)
@@ -95,7 +106,7 @@ if __name__ == '__main__':
 
     # ***** normalize *****
     # analysis
-    do_analysis = True
+    do_analysis = False
     if do_analysis:
         print(np.shape(item_list))
         suspicious_channels = []
@@ -137,6 +148,13 @@ if __name__ == '__main__':
         print('\rDataprep processing... {:.2f}% done.'.format(100 * (i + 1) / tot_len))
         # sys.stdout.write('\rDataprep processing... {:.2f}% done.'.format(100 * (i + 1) / tot_len))
     # sys.stdout.write('\rdone.\n')
+
+    # shift (test if it has any use)
+    print(np.shape(data_X))
+    print(np.shape(data_Y))
+    data_X, data_Y = shift_trajectory(data_X, data_Y)
+    print(np.shape(data_X))
+    print(np.shape(data_Y))
 
     # shuffle
     data_Y = data_prep.shuffle(data_Y, random_seed)

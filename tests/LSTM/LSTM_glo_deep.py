@@ -96,29 +96,41 @@ def train_LSTM(_datafile, _output_dir, _LSTM_kernels, _epochs):
     return history
 
 
-if __name__ == '__main__':
-    set_epochs = [1000]
-    set_kernels = [300]
+def make_log(_log_entry, _log_file):
+    if os.path.isfile(_log_file):
+        with open(_log_file, 'r') as f:
+            old_res = json.load(f)
+        new_res = old_res + _log_entry
+    else:
+        new_res = _log_entry
 
+    with open(logfile, 'w') as f:
+        json.dump(new_res, f)
+
+
+if __name__ == '__main__':
+    set_epochs = [10]
+    set_kernels = [10]
+    experiment = 'test_glo_v1'
     source_dir = '/home/jedle/data/Sign-Language/_source_clean/testing'
-    # prepared_data_file = os.path.join(source_dir, 'prepared_data.npz')
+    data_dir = os.path.join('/home/jedle/data/Sign-Language/_source_clean/testing', experiment)
     prepared_data_file = os.path.join(source_dir, 'prepared_data_glo_30-30ns.npz')
-    logfile = os.path.join(source_dir, 'losses.txt')
+    logfile = os.path.join(data_dir, 'losses.txt')
     NN_type = 'train_LSTM'
     NN_function = globals()[NN_type]
 
     for k in set_kernels:
         for e in set_epochs:
 
-            history = NN_function(prepared_data_file, source_dir, k, e)
+            history = NN_function(prepared_data_file, data_dir, k, e)
             akt_result = [{'NN_version': NN_type, 'kernels' : k, 'epochs' : e, 'loss' : history.history['loss'][-1], 'val_loss' : history.history['val_loss'][-1]}]
-
-            if os.path.isfile(logfile):
-                with open(logfile, 'r') as f:
-                    old_res = json.load(f)
-                new_res = old_res + akt_result
-            else:
-                new_res = akt_result
-
-            with open(logfile, 'w') as f:
-                json.dump(new_res, f)
+            make_log(akt_result, logfile)
+            # if os.path.isfile(logfile):
+            #     with open(logfile, 'r') as f:
+            #         old_res = json.load(f)
+            #     new_res = old_res + akt_result
+            # else:
+            #     new_res = akt_result
+            #
+            # with open(logfile, 'w') as f:
+            #     json.dump(new_res, f)
