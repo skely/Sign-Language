@@ -97,8 +97,8 @@ def train_LSTM(_datafile, _output_dir, _LSTM_kernels, _epochs):
 
 
 if __name__ == '__main__':
-    set_epochs = [300]
-    set_kernels = [1000]
+    set_epochs = [1000]
+    set_kernels = [300]
 
     source_dir = '/home/jedle/data/Sign-Language/_source_clean/testing'
     # prepared_data_file = os.path.join(source_dir, 'prepared_data.npz')
