@@ -109,9 +109,9 @@ def make_log(_log_entry, _log_file):
 
 
 if __name__ == '__main__':
-    set_epochs = [1000]
-    set_kernels = [300]
-    experiment = 'test_glo_v1'
+    set_epochs = [5]
+    set_kernels = [5]
+    experiment = 'test_glo_v2'
     source_dir = '/home/jedle/data/Sign-Language/_source_clean/testing'
     data_dir = os.path.join('/home/jedle/data/Sign-Language/_source_clean/testing', experiment)
     prepared_data_file = os.path.join(source_dir, 'prepared_data_glo_30-30ns.npz')

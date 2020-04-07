@@ -58,7 +58,7 @@ if __name__ == '__main__':
 
     model_file = os.path.join(work_dir, 'model_LSTM_AE_ker{}_ep{}.h5'.format(top[0], top[1]))
     # model_file = os.path.join(work_dir, 'model_LSTM_AE_ker200_ep1000.h5')
-    data_file = '/home/jedle/data/Sign-Language/_source_clean/testing/prepared_data_glo_30-30n.npz'
+    data_file = '/home/jedle/data/Sign-Language/_source_clean/testing/prepared_data_glo_30-30.npz'
 
     model = load_model(model_file)
     data = np.load(data_file)
@@ -75,9 +75,9 @@ if __name__ == '__main__':
     # print(np.shape(test_X))
     # print(np.shape(prediction))
 
-    plt.plot(train_X[10, :, 20], label='train_X')
-    plt.plot(train_Y[10, :, 20], label='train_Y')
-    plt.plot(prediction[10, :, 20], label='NN prediction')
+    plt.plot(train_X[10, :, 22], label='train_X')
+    plt.plot(train_Y[10, :, 22], label='train_Y')
+    plt.plot(prediction[10, :, 22], label='NN prediction')
     plt.show()
 
     list_lin = []
