@@ -102,7 +102,7 @@ if __name__ == '__main__':
 
     source_dir = '/home/jedle/data/Sign-Language/_source_clean/testing'
     # prepared_data_file = os.path.join(source_dir, 'prepared_data.npz')
-    prepared_data_file = os.path.join(source_dir, 'prepared_data_glo_30-30n.npz')
+    prepared_data_file = os.path.join(source_dir, 'prepared_data_glo_30-30ns.npz')
     logfile = os.path.join(source_dir, 'losses.txt')
     NN_type = 'train_LSTM'
     NN_function = globals()[NN_type]
