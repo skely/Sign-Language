@@ -8,9 +8,15 @@ import matplotlib.pyplot as plt
 source_dir = '/home/jedle/data/Sign-Language/_source_clean/'
 bvh_dir = '/home/jedle/data/Sign-Language/_source_clean/bvh/'
 bvh_src_file = '/home/jedle/data/Sign-Language/_source_clean/bvh/16_05_20_a_R.bvh'
+<<<<<<< HEAD:LSTM_dataprep.py
 dict_file = os.path.join(source_dir, 'ultimate_dictionary2.txt')
 # take_dict_file = os.path.join(source_dir, 'dictionary_takes_v3.txt')
 # dict_dict_file = os.path.join(source_dir, 'dictionary_dict_v4.txt')
+=======
+take_dict_file = os.path.join(source_dir, 'ultimate_dictionary2.txt')
+# dict_dict_file = os.path.join(source_dir, 'dictionary_dict_v4.txt')
+# dict_dict_file = os.path.join(source_dir, 'dictionary_dict_v4.txt')
+>>>>>>> 7aa2a51e9cca5a62459fdc57310be632873891d3:tests/LSTM/LSTM_dataprep.py
 prepared_data_file = os.path.join(source_dir, 'prepared_data_30-30.npz')
 
 m, c, _ = BVH.get_joint_list(bvh_src_file)
