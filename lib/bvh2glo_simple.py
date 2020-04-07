@@ -18,6 +18,6 @@ def calculate(_in_file):
         for c, joint in enumerate(joints):
             j = skeleton.getJoint(joint)
             retval[i, c, :] = j.worldpos[0], j.worldpos[1], j.worldpos[2]
-        sys.stdout.write('\rDataprep processing... {:.2f}% done.'.format(100 * (i + 1) / total_length))
-    sys.stdout.write('\rDataprep processing... done.\n')
+        sys.stdout.write('\rCalculating global positions... {:.2f}% done.'.format(100 * (i + 1) / total_length))
+    sys.stdout.write('\rCalculating global positions... done.\n')
     return joints, retval
