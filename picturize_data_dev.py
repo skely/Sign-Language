@@ -1,4 +1,3 @@
-from lib import BVH
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
@@ -120,12 +119,6 @@ if __name__ == '__main__':
     train_X = data['train_X']
     train_Y = data['train_Y']
 
-    # np.shape(train_X)
-    # train_X = picturize_data(train_X)
-    # minimaxi = get_minmax_3D(train_X)
-    # testik = normalize_3D(train_X, minimaxi)
-
     do_stuff(train_Y)
     do_stuff(train_X, mask=30)
-    # do_stuff(train_X-train_Y)
     plt.show()
