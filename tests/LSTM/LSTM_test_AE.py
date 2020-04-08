@@ -1,6 +1,6 @@
 import os
 import datetime
-from tests.LSTM import LSTM_train
+import LSTM_train
 
 
 if __name__ == '__main__':
