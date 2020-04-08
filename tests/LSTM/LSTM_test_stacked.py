@@ -5,8 +5,8 @@ from tests.LSTM import LSTM_train
 
 if __name__ == '__main__':
     ref_time = datetime.datetime.now()
-    set_epochs = [3]
-    set_kernels = [8]
+    set_epochs = [1000, 2000, 3000]
+    set_kernels = [200, 300, 400]
     experiment = 'test_glo_v4'
     source_dir = '/home/jedle/data/Sign-Language/_source_clean/testing'
     data_dir = os.path.join(source_dir, experiment)
