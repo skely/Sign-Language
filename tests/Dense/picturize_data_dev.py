@@ -1,6 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
+import cv2
+
 
 def picturize_data(_data):
     dimension = np.ndim(_data)
@@ -69,15 +71,17 @@ def normalize_3D(_data):
 def do_stuff(data_selected, mask=None):
     if mask is None:
         caption = 'ground truth'
-        do_3D_plot = True
+        do_3D_plot = False
+        # do_3D_plot = True
     else:
         caption = 'known data'
         do_3D_plot = False
-    do_imshow = True
+
+    do_imshow = False
 
     data_selected = picturize_data(data_selected)
     normed = normalize_3D(data_selected)
-
+    retval = normed
     # plot 3D
     # ****************
     batch_item = 0
@@ -104,6 +108,9 @@ def do_stuff(data_selected, mask=None):
         # plt.show()
         ax.legend()
     if mask==30:
+        mask_pic = np.zeros_like(normed)
+        mask_pic[0, mask:-mask, :, :] = 1
+        retval = mask_pic
         normed[0, mask:-mask, :, :] = 0
 
     if do_imshow:
@@ -113,12 +120,28 @@ def do_stuff(data_selected, mask=None):
             result = np.swapaxes(normed, 1, 2)[i, :, :, :]
             plt.imshow(result)
 
+    return retval[0]
+
 if __name__ == '__main__':
     data_file = '/home/jedle/data/Sign-Language/_source_clean/testing/prepared_data_glo_30-30.npz'
     data = np.load(data_file)
     train_X = data['train_X']
     train_Y = data['train_Y']
 
-    do_stuff(train_Y)
-    do_stuff(train_X, mask=30)
+    normed_pic = do_stuff(train_Y)
+    mask_only = do_stuff(train_X, mask=30)
+
+    print(np.shape(normed_pic))
+    print(np.shape(mask_only))
+    normed_pic = np.swapaxes(normed_pic, 0, 1)
+    mask_only = np.swapaxes(mask_only, 0, 1)
+
+    plt.figure()
+    plt.imshow(normed_pic)
+    plt.figure()
+    plt.imshow(mask_only)
     plt.show()
+
+    cv2.imwrite('orig.png', normed_pic*256)
+    cv2.imwrite('mask.png', mask_only*256)
+
