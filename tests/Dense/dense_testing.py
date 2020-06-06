@@ -275,7 +275,7 @@ if __name__ == '__main__':
     results.append('repetitions={}'.format(repetitions))
     results.append('\n')
 
-    with open(os.path.join(path, results_filename+'.txt') as f:
+    with open(os.path.join(path, results_filename+'.txt')) as f:
 	f.wirtelines(results)	
     results = []
 
