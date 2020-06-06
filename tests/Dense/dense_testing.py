@@ -258,11 +258,12 @@ if __name__ == '__main__':
     learning_rate = 0.001
     optimizer = 'adam'
 
-    epochs = 100
+    epochs = 2
     batch_size = 100
-    hidden_layer_sizes = [[9], [27], [81], [248]]
-    repetitions = 3
-
+    # hidden_layer_sizes = [[9], [27], [81], [248]]
+    hidden_layer_sizes = [[9]]
+    repetitions = 1
+    results_filename = 'results3'
     results = []
     results.append('data_file={}'.format(data_file))
     results.append('loss={}'.format(loss))
@@ -274,6 +275,10 @@ if __name__ == '__main__':
     results.append('repetitions={}'.format(repetitions))
     results.append('\n')
 
+    with open(os.path.join(path, results_filename+'.txt') as f:
+	f.wirtelines(results)	
+    results = []
+
     for h in hidden_layer_sizes:
         for r in range(repetitions):
             model_name = 'model_Dense_v1_{}_r{}'.format(h[0], r)
@@ -284,7 +289,8 @@ if __name__ == '__main__':
             model_n.save(os.path.join(path, model_name+'n'))
 
     print(results)
-    np.save(os.path.join(path, 'results2'), results)
+    np.save(os.path.join(path, results_filename), results)
+
 
 
 
