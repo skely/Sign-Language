@@ -258,11 +258,11 @@ if __name__ == '__main__':
     learning_rate = 0.001
     optimizer = 'adam'
 
-    epochs = 2
+    epochs = 100
     batch_size = 100
-    # hidden_layer_sizes = [[9], [27], [81], [248]]
-    hidden_layer_sizes = [[9]]
-    repetitions = 1
+    hidden_layer_sizes = [[9], [27], [81], [248]]
+    # hidden_layer_sizes = [[9]]
+    repetitions = 3
     results_filename = 'results3'
     results = []
     results.append('data_file={}'.format(data_file))
@@ -275,8 +275,8 @@ if __name__ == '__main__':
     results.append('repetitions={}'.format(repetitions))
     results.append('\n')
 
-    with open(os.path.join(path, results_filename+'.txt')) as f:
-	f.wirtelines(results)	
+    with open(os.path.join(path, results_filename+'.txt'), 'w') as f:
+        f.writelines(results)	
     results = []
 
     for h in hidden_layer_sizes:
