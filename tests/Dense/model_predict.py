@@ -113,68 +113,27 @@ def prediction(_model, test_input):
     return _model.predict(test_input)
 
 
-def make_log():
-    model_plot_name = 'model_{}_run_{}.png'.format(test_name, i)
-    model_name = 'model_{}_run_{}.h5'.format(test_name, i)
-
-    plot_model(model, to_file=os.path.join(path, model_plot_name), show_shapes=True)
-
-    lines_list = []
-    lines_list.append('*******************************\n')
-    lines_list.append('test name: {}\n'.format(test_name))
-    lines_list.append('model file name: {}\n'.format(model_name))
-
-    lines_list.append('hidden_layers: {}\n'.format(h))
-    lines_list.append('skips: {}\n'.format(skips))
-    lines_list.append('model plot: {}\n'.format(test_name + '.png'))
-
-    lines_list.append('loss function: {}\n'.format(loss))
-    lines_list.append('optimizer_name: {}\n'.format(optimizer_name))
-    lines_list.append('learning_rate: {}\n'.format(learning_rate))
-    lines_list.append('momentum: {}\n'.format(momentum))
-    lines_list.append('decay: {}\n'.format(decay))
-
-    lines_list.append('epochs: {}\n'.format(epochs))
-    lines_list.append('batch_size: {}\n'.format(batch_size))
-
-    lines_list.append('mse: {}\n'.format(mse))
-    lines_list.append('accuracy: {}\n'.format(accuracy))
-    lines_list.append('start_time: {}\n'.format(start_time))
-    lines_list.append('end_time: {}\n'.format(end_time))
-    lines_list.append('duration: {}\n'.format(end_time-start_time))
-
-    with open(os.path.join(path, '{}.txt'.format(test_name)), 'a+') as f:
-        f.writelines(lines_list)
+def compare(_orig, _comp):
+    mse = ((_orig - _comp) ** 2).mean(axis=1)
+    return np.mean(mse)
 
 
 if __name__ == '__main__':
     path = '/home/jedle/Projects/Sign-Language/tests/Dense/tests'
     data_file = '/home/jedle/data/Sign-Language/_source_clean/testing/prepared_data_glo_30-30.npz'
+    model_file = '/home/jedle/Projects/Sign-Language/tests/Dense/tests/model_dense_3layer_run_3.h5'
 
-    data = prepare_data_file(data_file)
-    data_shape = np.shape(data[0])
+    train_X, train_Y, test_X, test_Y = prepare_data_file(data_file)
+    model = load_model(model_file)
+    res = model.predict(test_X)
 
-    test_name = 'dense_3layer_sgd_lr01_skips'
-    skips = 'simple'
-    hidden_layer_sizes = [[9], [27], [81], [248], [9], [27], [81], [248], [9], [27], [81], [248]]
-    loss = 'mean_squared_error'
-    optimizer_name = 'sgd'
-    learning_rate = 0.1
-    # momentum = [0.9, 0.99]
-    momentum = 0.9
-    decay = 1e-7
+    print('test Y vs test X')
+    print(compare(test_Y[0, :, :], test_X[0, :, :]))
+    print('test Y vs prediction')
+    print(compare(test_Y[0, :, :], res[0, :, :]))
 
-    epochs = 200
-    batch_size = 100
-
-    for i, h in enumerate(hidden_layer_sizes):
-        start_time = datetime.datetime.now()
-        optimizer = optimizer_definition(optimizer_name, learning_rate, momentum, decay)
-        model = model_definition(h, data_shape, loss, optimizer, batch_size, skips)
-        model, evaluation, history = training(model, data, epochs, batch_size)
-        _, mse, accuracy = evaluation
-        end_time = datetime.datetime.now()
-        make_log()
-        model.save(os.path.join(path, 'model_{}_run_{}.h5'.format(test_name, i)))
-        with open(os.path.join(path, 'history_{}_run_{}.pkl'.format(test_name, i)), 'wb') as f:
-            pickle.dump(history.history, f, pickle.HIGHEST_PROTOCOL)
+    plt.plot(res[0, :, 0], label='prediction')
+    plt.plot(test_Y[0, :, 0], label='groung truth')
+    plt.plot(test_X[0, :, 0], label='cubic interpolation')
+    plt.legend()
+    plt.show()
