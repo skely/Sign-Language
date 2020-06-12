@@ -47,11 +47,12 @@ def prepare_data_file(_data_file, normalize=True, shuffle=False, resize='3d'):
     _train_Y = _data['train_Y']
     _test_X = _data['test_X']
     _test_Y = _data['test_Y']
+    min_max_all = np.zeros((4, 2))
     if normalize:
-        _train_X, minmax = data_normalization(_train_X)
-        _train_Y, minmax = data_normalization(_train_Y)
-        _test_X, minmax = data_normalization(_test_X)
-        _test_Y, minmax = data_normalization(_test_Y)
+        _train_X, min_max_all[0, :] = data_normalization(_train_X)
+        _train_Y, min_max_all[1, :] = data_normalization(_train_Y)
+        _test_X, min_max_all[2, :] = data_normalization(_test_X)
+        _test_Y, min_max_all[3, :] = data_normalization(_test_Y)
     if resize == '3d':
         _train_X = my_resize_dense_3d(_train_X)
         _train_Y = my_resize_dense_3d(_train_Y)
@@ -67,7 +68,7 @@ def prepare_data_file(_data_file, normalize=True, shuffle=False, resize='3d'):
         _test_Y = _test_Y[pattern, :, :]
         print(np.shape(_train_X))
 
-    return _train_X, _train_Y, _test_X, _test_Y
+    return _train_X, _train_Y, _test_X, _test_Y, min_max_all
 
 
 def optimizer_definition(_optimizer_name, _learning_rate, _momentum, _decay):
@@ -81,22 +82,22 @@ def optimizer_definition(_optimizer_name, _learning_rate, _momentum, _decay):
     return _opt
 
 
-def model_definition(_layers, _data_shape, _loss, _optimizer, _batch_size, _skips):
-    _activation_function = 'relu'
+def model_definition(_layers, _data_shape, _loss, _optimizer, _batch_size, _skips, _activation_function):
+    # _activation_function = 'relu'
     batch, time, features = _data_shape
     depth = len(_layers)
 
     input_layer = Input(shape=(time, features))
     last_layer = input_layer
     for i in range(depth):
-        new_layer = Dense(_layers[i], activation=_activation_function)(last_layer)
+        new_layer = Dense(_layers[i], activation=_activation_function[i], use_bias=True)(last_layer)
         if _skips == 'no':
             last_layer = new_layer
         elif _skips == 'simple':
             skip_layer = concatenate([new_layer, last_layer])
             last_layer = skip_layer
+    output_layer = Dense(features, activation=_activation_function[-1], use_bias=True)(last_layer)
 
-    output_layer = Dense(features, activation=_activation_function)(last_layer)
     _model = Model(inputs=input_layer, outputs=output_layer, name='model_from_definition')
     _model.compile(loss=_loss, optimizer=_optimizer, metrics=['mean_squared_error', 'accuracy'])
     _model.summary()
@@ -143,7 +144,7 @@ def make_log():
     lines_list.append('end_time: {}\n'.format(end_time))
     lines_list.append('duration: {}\n'.format(end_time-start_time))
 
-    with open(os.path.join(path, '{}.txt'.format(test_name)), 'a+') as f:
+    with open(os.path.join(path, 'results_{}.txt'.format(test_name)), 'a+') as f:
         f.writelines(lines_list)
 
 
@@ -154,23 +155,26 @@ if __name__ == '__main__':
     data = prepare_data_file(data_file)
     data_shape = np.shape(data[0])
 
-    test_name = 'dense_3layer_sgd_lr01_skips'
-    skips = 'simple'
-    hidden_layer_sizes = [[9], [27], [81], [248], [9], [27], [81], [248], [9], [27], [81], [248]]
+    test_name = 'dense_4layer_v2'
+    # skips = 'simple'
+    skips = 'no'
+
+    epochs = 500
+    batch_size = 100
+    hidden_layer_sizes = [[9, 9], [27, 27], [81, 81], [248, 248]]
+    activation_function = ['sigmoid', 'sigmoid', 'sigmoid']
     loss = 'mean_squared_error'
     optimizer_name = 'sgd'
     learning_rate = 0.1
     # momentum = [0.9, 0.99]
-    momentum = 0.9
-    decay = 1e-7
+    momentum = 0.99
+    decay = 1e-8/epochs
 
-    epochs = 200
-    batch_size = 100
 
     for i, h in enumerate(hidden_layer_sizes):
         start_time = datetime.datetime.now()
         optimizer = optimizer_definition(optimizer_name, learning_rate, momentum, decay)
-        model = model_definition(h, data_shape, loss, optimizer, batch_size, skips)
+        model = model_definition(h, data_shape, loss, optimizer, batch_size, skips, activation_function)
         model, evaluation, history = training(model, data, epochs, batch_size)
         _, mse, accuracy = evaluation
         end_time = datetime.datetime.now()

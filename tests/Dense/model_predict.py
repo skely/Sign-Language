@@ -118,22 +118,48 @@ def compare(_orig, _comp):
     return np.mean(mse)
 
 
-if __name__ == '__main__':
-    path = '/home/jedle/Projects/Sign-Language/tests/Dense/tests'
-    data_file = '/home/jedle/data/Sign-Language/_source_clean/testing/prepared_data_glo_30-30.npz'
-    model_file = '/home/jedle/Projects/Sign-Language/tests/Dense/tests/model_dense_3layer_run_3.h5'
+def run_model_predict(_path, _data_file, _model_file, _batch, _channel, train_data=False):
+    train_X, train_Y, test_X, test_Y = prepare_data_file(_data_file)
+    if train_data:
+        test_Y = train_Y
+        test_X = train_X
 
-    train_X, train_Y, test_X, test_Y = prepare_data_file(data_file)
-    model = load_model(model_file)
+    model = load_model(_model_file)
     res = model.predict(test_X)
 
     print('test Y vs test X')
-    print(compare(test_Y[0, :, :], test_X[0, :, :]))
+    print(compare(test_Y[_batch, :, :], test_X[_batch, :, :]))
     print('test Y vs prediction')
-    print(compare(test_Y[0, :, :], res[0, :, :]))
+    print(compare(test_Y[_batch, :, :], res[_batch, :, :]))
 
-    plt.plot(res[0, :, 0], label='prediction')
-    plt.plot(test_Y[0, :, 0], label='groung truth')
-    plt.plot(test_X[0, :, 0], label='cubic interpolation')
+    plt.plot(res[_batch, :, _channel], label='prediction')
+    plt.plot(test_Y[_batch, :, _channel], label='groung truth')
+    plt.plot(test_X[_batch, :, _channel], label='cubic interpolation')
     plt.legend()
     plt.show()
+
+
+if __name__ == '__main__':
+    path = '/home/jedle/Projects/Sign-Language/tests/Dense/tests'
+    data_file = '/home/jedle/data/Sign-Language/_source_clean/testing/prepared_data_glo_30-30.npz'
+    model_file = '/home/jedle/Projects/Sign-Language/tests/Dense/tests/model_dense_3layer_sgd_lr01_skips_bias_run_9.h5'
+
+    batch = 0
+    channel = 0
+
+    run_model_predict(path, data_file, model_file, batch, channel)
+
+    # train_X, train_Y, test_X, test_Y = prepare_data_file(data_file)
+    # model = load_model(model_file)
+    # res = model.predict(test_X)
+    #
+    # print('test Y vs test X')
+    # print(compare(test_Y[batch, :, :], test_X[batch, :, :]))
+    # print('test Y vs prediction')
+    # print(compare(test_Y[batch, :, :], res[batch, :, :]))
+    #
+    # plt.plot(res[batch, :, channel], label='prediction')
+    # plt.plot(test_Y[batch, :, channel], label='groung truth')
+    # plt.plot(test_X[batch, :, channel], label='cubic interpolation')
+    # plt.legend()
+    # plt.show()
