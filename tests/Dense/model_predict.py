@@ -132,12 +132,15 @@ def run_model_predict(_path, _data_file, _model_file, _batch, _channel, train_da
     print('test Y vs prediction')
     print(compare(test_Y[_batch, :, :], res[_batch, :, :]))
 
-    plt.plot(res[_batch, :, _channel], label='prediction')
-    plt.plot(test_Y[_batch, :, _channel], label='groung truth')
-    plt.plot(test_X[_batch, :, _channel], label='cubic interpolation')
+    plt.figure()
+    plt.title('axis: {}'.format(['X', 'Y', 'Z'][_channel]))
+    # plt.plot(res[_batch, :, _channel], label='prediction')
+    plt.plot(test_Y[_batch, :, _channel], label='ground truth')
+    plt.plot(test_X[_batch, :, _channel], label='cubic interpolation (input)')
     plt.legend()
-    plt.show()
-
+    # plt.show()
+    plt.savefig(os.path.join(_path, 'figure-{}-{}-data'.format(_batch, _channel)))
+    return res
 
 if __name__ == '__main__':
     path = '/home/jedle/Projects/Sign-Language/tests/Dense/tests'

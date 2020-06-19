@@ -9,11 +9,13 @@ from keras.layers import Dense, Input, concatenate
 from keras.optimizers import adam, sgd
 from keras.utils import plot_model
 
-
-def data_normalization(_data):
+def data_normalization_get_min_max(_data):
     _min = np.min(_data)
     _max = np.max(_data)
+    return _min, _max
 
+def data_normalization(_data):
+    _min, _max = data_normalization_get_min_max(_data)
     _normed_data = (_data - _min) / (_max - _min)
     return _normed_data, [_min, _max]
 
@@ -41,18 +43,34 @@ def visual_testing(_test_X, _test_Y, _model, _item):
     plt.show()
 
 
-def prepare_data_file(_data_file, normalize=True, shuffle=False, resize='3d'):
+def load_data_file(_data_file):
     _data = np.load(_data_file)
     _train_X = _data['train_X']
     _train_Y = _data['train_Y']
     _test_X = _data['test_X']
     _test_Y = _data['test_Y']
+    return _train_X, _train_Y, _test_X, _test_Y
+
+
+def prepare_data_file(_data_file, normalize=True, shuffle=False, resize='3d', reduce=True):
+
+    _data = load_data_file(_data_file)
     min_max_all = np.zeros((4, 2))
     if normalize:
-        _train_X, min_max_all[0, :] = data_normalization(_train_X)
-        _train_Y, min_max_all[1, :] = data_normalization(_train_Y)
-        _test_X, min_max_all[2, :] = data_normalization(_test_X)
-        _test_Y, min_max_all[3, :] = data_normalization(_test_Y)
+        _data_concat = np.concatenate(_data)
+        _data_concat_normed, _ = data_normalization(_data_concat)
+        sizes = []
+        for i in range(len(_data)):
+            if i == 0 :
+                sizes.append(np.shape(_data[i])[0])
+            else:
+                sizes.append((np.shape(_data[i])[0]) + sizes[len(sizes) - 1])
+
+        _train_X = _data_concat_normed[0:sizes[0], :, :]
+        _train_Y = _data_concat_normed[sizes[0]:sizes[1], :, :]
+        _test_X = _data_concat_normed[sizes[1]:sizes[2], :, :]
+        _test_Y = _data_concat_normed[sizes[2]:, :, :]
+
     if resize == '3d':
         _train_X = my_resize_dense_3d(_train_X)
         _train_Y = my_resize_dense_3d(_train_Y)
@@ -68,6 +86,13 @@ def prepare_data_file(_data_file, normalize=True, shuffle=False, resize='3d'):
         _test_Y = _test_Y[pattern, :, :]
         print(np.shape(_train_X))
 
+    if reduce:
+        print(np.shape(_train_X))
+        _train_X = _train_X[:, :, 0]
+        _train_Y = _train_Y[:, :, 0]
+        _test_X = _test_X[:, :, 0]
+        _test_Y = _test_Y[:, :, 0]
+
     return _train_X, _train_Y, _test_X, _test_Y, min_max_all
 
 
@@ -80,6 +105,28 @@ def optimizer_definition(_optimizer_name, _learning_rate, _momentum, _decay):
         _opt = sgd(lr=_learning_rate, momentum=_momentum, decay=_decay, nesterov=False)
 
     return _opt
+
+
+def model_definition_1d(_layers, _data_shape, _loss, _optimizer, _batch_size, _skips, _activation_function):
+    # _activation_function = 'relu'
+    batch, time = _data_shape
+    depth = len(_layers)
+
+    input_layer = Input(shape=(time,))
+    last_layer = input_layer
+    for i in range(depth):
+        new_layer = Dense(_layers[i], activation=_activation_function[i], use_bias=True)(last_layer)
+        if _skips == 'no':
+            last_layer = new_layer
+        elif _skips == 'simple':
+            skip_layer = concatenate([new_layer, last_layer])
+            last_layer = skip_layer
+    output_layer = Dense(time, activation=_activation_function[-1], use_bias=True)(last_layer)
+
+    _model = Model(inputs=input_layer, outputs=output_layer, name='model_from_definition')
+    _model.compile(loss=_loss, optimizer=_optimizer, metrics=['mean_squared_error', 'accuracy'])
+    _model.summary()
+    return _model
 
 
 def model_definition(_layers, _data_shape, _loss, _optimizer, _batch_size, _skips, _activation_function):
@@ -105,7 +152,7 @@ def model_definition(_layers, _data_shape, _loss, _optimizer, _batch_size, _skip
 
 
 def training(_model, _data, _epochs, _batch_size):
-    _history = _model.fit(_data[0], _data[1], epochs=_epochs, batch_size=_batch_size, verbose=1)
+    _history = _model.fit(_data[0], _data[1], epochs=_epochs, batch_size=_batch_size, verbose=2)
     _evaluations = _model.evaluate(_data[2], _data[3])
     return _model, _evaluations, _history
 
@@ -154,12 +201,13 @@ if __name__ == '__main__':
 
     data = prepare_data_file(data_file)
     data_shape = np.shape(data[0])
+    print(data_shape)
 
-    test_name = 'dense_4layer_v2'
+    test_name = 'dense_4layer_v2_tst2'
     # skips = 'simple'
     skips = 'no'
 
-    epochs = 500
+    epochs = 1000
     batch_size = 100
     hidden_layer_sizes = [[9, 9], [27, 27], [81, 81], [248, 248]]
     activation_function = ['sigmoid', 'sigmoid', 'sigmoid']
@@ -174,7 +222,7 @@ if __name__ == '__main__':
     for i, h in enumerate(hidden_layer_sizes):
         start_time = datetime.datetime.now()
         optimizer = optimizer_definition(optimizer_name, learning_rate, momentum, decay)
-        model = model_definition(h, data_shape, loss, optimizer, batch_size, skips, activation_function)
+        model = model_definition_1d(h, data_shape, loss, optimizer, batch_size, skips, activation_function)
         model, evaluation, history = training(model, data, epochs, batch_size)
         _, mse, accuracy = evaluation
         end_time = datetime.datetime.now()
