@@ -4,13 +4,34 @@ import random
 import matplotlib.pyplot as plt
 
 
-def data_reshape(_data):
+def data_reshape(_data, _mode='oneax'):
     train_X, train_Y, test_X, test_Y = _data
-    train_X = data_reshape_array(train_X)
-    train_Y = data_reshape_array(train_Y)
-    test_X = data_reshape_array(test_X)
-    test_Y = data_reshape_array(test_Y)
+
+    if _mode == 'orig':
+        train_X = data_reshape_array(train_X)
+        train_Y = data_reshape_array(train_Y)
+        test_X = data_reshape_array(test_X)
+        test_Y = data_reshape_array(test_Y)
+    if _mode == 'oneax':
+        train_X = data_reshape_oneaxis(train_X)
+        train_Y = data_reshape_oneaxis(train_Y)
+        test_X = data_reshape_oneaxis(test_X)
+        test_Y = data_reshape_oneaxis(test_Y)
+
     return  train_X, train_Y, test_X, test_Y
+
+
+def data_reshape_oneaxis(_data):
+    selected_channel = 1
+    batch, time, channels = np.shape(_data)
+    reshaped_data = np.zeros((int(batch * channels / 3), time))
+    # print(np.shape(reshaped_data))
+    for i in range(batch):
+        for j in range(int(channels/3)):
+            reshaped_data[i*int(channels/3)+j, :] = np.transpose(_data[i, :, j*3+selected_channel])
+
+
+    return reshaped_data
 
 
 def data_reshape_array(_data):

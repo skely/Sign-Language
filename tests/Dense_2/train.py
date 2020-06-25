@@ -1,6 +1,7 @@
 import os
 import pickle
 import numpy as np
+import matplotlib.pyplot as plt
 # import tests.Dense_2.data_prep as data_prep
 import data_prep
 from keras.layers import Dense, Input
@@ -11,22 +12,27 @@ from keras.optimizers import sgd
 def define_model():
     _loss = 'mean_squared_error'
     _optimizer = 'sgd'
-    lr = 0.01
+    lr = 0.1
     momentum = 0.
     decay = 1e-8/epochs
     _optimizer = sgd(lr, momentum, decay=decay)
     _activation = 'sigmoid'
 
     inputs = Input(shape=(97,))
-    layer_1 = Dense(97, activation=_activation, use_bias=True)(inputs)
-    layer_2 = Dense(97*3, activation=_activation, use_bias=True)(layer_1)
-    layer_3 = Dense(97*9, activation=_activation, use_bias=True)(layer_2)
-    layer_4 = Dense(97*27, activation=_activation, use_bias=True)(layer_3)
-    layer_5 = Dense(97*9, activation=_activation, use_bias=True)(layer_4)
-    layer_6 = Dense(97*3, activation=_activation, use_bias=True)(layer_5)
-    layer_7 = Dense(97, activation=_activation, use_bias=True)(layer_6)
+    layer_1 = Dense(97*3, activation=_activation, use_bias=True)(inputs)
+    layer_2 = Dense(97*3*3, activation=_activation, use_bias=True)(layer_1)
+    layer_3 = Dense(97*3*3*3, activation=_activation, use_bias=True)(layer_2)
+    layer_4 = Dense(97*3*3*3*3, activation=_activation, use_bias=True)(layer_3)
+    layer_5 = Dense(97*3*3*3*3, activation=_activation, use_bias=True)(layer_4)
+    layer_6 = Dense(97*3*3*3*3, activation=_activation, use_bias=True)(layer_5)
+    layer_7 = Dense(97*3*3*3*3, activation=_activation, use_bias=True)(layer_6)
+    layer_8 = Dense(97*3*3*3*3, activation=_activation, use_bias=True)(layer_7)
+    layer_9 = Dense(97*3*3*3*3, activation=_activation, use_bias=True)(layer_8)
+    layer_10 = Dense(97*3*3*3, activation=_activation, use_bias=True)(layer_9)
+    layer_11 = Dense(97*3*3, activation=_activation, use_bias=True)(layer_10)
+    layer_12 = Dense(97, activation=_activation, use_bias=True)(layer_11)
 
-    _model = Model(inputs=inputs, outputs=layer_7, name='model_flat')
+    _model = Model(inputs=inputs, outputs=layer_12, name='model_flat')
     _model.compile(loss=_loss, optimizer=_optimizer, metrics=['mean_squared_error'])
     _model.summary()
 
@@ -54,20 +60,21 @@ def log():
     lines_list.append('model_visualization: {}.png\n'.format(test_name))
     lines_list.append('epochs: {}\n'.format(epochs))
     lines_list.append('batch: {}\n'.format(batch))
+    lines_list.append('loss: {}\n'.format(evaluation[0]))
+    lines_list.append('mse: {}\n'.format(evaluation[1]))
 
-    with open(os.path.join(path, 'all_logs.txt'.format(test_name)), 'a+') as f:
+    with open(os.path.join(path, 'all_logs_oneax.txt'.format(test_name)), 'a+') as f:
         f.writelines(lines_list)
 
 
 if __name__ == '__main__':
     path = '/home/jedle/Projects/Sign-Language/tests/Dense_2/tests'
     data_file = '/home/jedle/data/Sign-Language/_source_clean/testing/prepared_data_glo_30-30.npz'
-    epochs = 200
-    batch = 1000
-    test_name = 'pyramid_7l_decay'
+    epochs = 100
+    batch = 100
+    test_name = 'pyramid_12l_oneax'
     data = data_prep.main(data_file)
+
     model = define_model()
     model, evaluation, history = training(model, data, epochs, batch)
     log()
-
-
