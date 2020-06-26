@@ -75,12 +75,14 @@ if __name__ == '__main__':
     data = data_prep.main(data_file)
 
     ordered = evaluate_results(results)
+    for o in ordered:
+        print('{} - mse: {}'.format(o['model file name'], o['mse']))
+
     picked_result = ordered[0]
 
     model = load_model(os.path.join(path, picked_result['model file name']))
+    model.summary()
     predicted = model.predict(data[0][0:10, :])
-
-
 
     plot_compare(data[0][0, :], data[1][0, :])
     plot_compare(data[0][0, :], predicted[0, :])
