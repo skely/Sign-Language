@@ -10,4 +10,10 @@ test name: pyramid_7l_decay
 model file name: model_pyramid_7l_decay.h5
 training history: history_pyramid_7l_decay.pkl
 model_visualization: pyramid_7l_decay.png
-epochs: 200batch: 1000
+epochs: 200batch: 1000*******************************
+test name: pyramid_7l_decay
+model file name: model_pyramid_7l_decay.h5
+training history: history_pyramid_7l_decay.pkl
+model_visualization: pyramid_7l_decay.png
+epochs: 2
+batch: 1000
