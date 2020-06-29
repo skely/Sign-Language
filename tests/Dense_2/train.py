@@ -25,6 +25,7 @@ def define_model():
     layer_1 = Dense(97, activation=_activation, use_bias=True)(inputs)
     layer_2 = Dense(97*97, activation=_activation, use_bias=True)(layer_1)
     layer_3 = Dense(97*97, activation=_activation, use_bias=True)(layer_2)
+    layer_4 = Dense(97*97, activation=_activation, use_bias=True)(layer_3)
     # layer_4 = Dense(97*3*3*3*3, activation=_activation, use_bias=True)(layer_3)
     # layer_5 = Dense(97*3*3*3*3*3, activation=_activation, use_bias=True)(layer_4)
     # layer_6 = Dense(97*3*3*3*3*3*3, activation=_activation, use_bias=True)(layer_5)
@@ -33,7 +34,7 @@ def define_model():
     # layer_9 = Dense(97*3*3*3*3*3*3, activation=_activation, use_bias=True)(layer_8)
     # layer_10 = Dense(97*3*3*3*3*3*3, activation=_activation, use_bias=True)(layer_9)
     # layer_11 = Dense(97*3*3*3*3*3*3, activation=_activation, use_bias=True)(layer_10)
-    layer_12 = Dense(97, activation=_activation, use_bias=True)(layer_3)
+    layer_12 = Dense(97, activation=_activation, use_bias=True)(layer_4)
 
     _model = Model(inputs=inputs, outputs=layer_12, name=_model_name)
     _model.compile(loss=_loss, optimizer=_optimizer, metrics=['mean_squared_error'])
