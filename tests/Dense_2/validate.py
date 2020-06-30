@@ -66,6 +66,19 @@ def plot_compare(data_1, data_2):
     plt.plot(data_2)
     # plt.show()
 
+
+def training_loss_graph(_result):
+    # print(_result['training history'])
+    history = np.load(os.path.join(path, _result['training history']), allow_pickle=True)
+    print(type(history))
+    print(history.keys())
+    # history = np.asarray(history)
+    plt.figure()
+    plt.title('loss history')
+    plt.plot(history['loss'])
+
+
+
 if __name__ == '__main__':
     path = '/home/jedle/Projects/Sign-Language/tests/Dense_2/tests'
     data_file = '/home/jedle/data/Sign-Language/_source_clean/testing/prepared_data_glo_30-30.npz'
@@ -80,9 +93,13 @@ if __name__ == '__main__':
 
     picked_result = ordered[0]
 
+    training_loss_graph(picked_result)
+
     model = load_model(os.path.join(path, picked_result['model file name']))
     model.summary()
     predicted = model.predict(data[0][0:10, :])
+
+
 
     plot_compare(data[0][0, :], data[1][0, :])
     plot_compare(data[0][0, :], predicted[0, :])

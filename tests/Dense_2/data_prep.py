@@ -91,7 +91,7 @@ def shuffle(_data, _seed=9):
     pattern = random.shuffle(list(range(np.size(_train_X, 0))))
     _train_X = _train_X[pattern, :, :]
     _train_Y = _train_Y[pattern, :, :]
-    pattern = random.shuffle(list(range(np.size(_test_X, 0))))
+    # pattern = random.shuffle(list(range(np.size(_test_X, 0))))
     _test_X = _test_X[pattern, :, :]
     _test_Y = _test_Y[pattern, :, :]
     # print(np.shape(_train_X))
