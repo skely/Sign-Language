@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 # import tests.Dense_2.data_prep as data_prep
 import data_prep
-from keras.layers import Dense, Input, Conv1D, Flatten, MaxPooling1D
+from keras.layers import Dense, Input, Conv1D, Flatten, MaxPooling1D, concatenate
 from keras.models import Model, Sequential
 from keras.utils import plot_model
 from keras.optimizers import sgd
@@ -25,8 +25,10 @@ def define_model():
 
     input = Input(shape=(97, 1))
     layer1 = Conv1D(filters=64, kernel_size=3, activation=_activation, padding='same')(input)
-    layer2 = Conv1D(filters=64, kernel_size=3, activation=_activation, padding='same')(layer1)
-    layer3 = Flatten()(layer2)
+    concat1 = concatenate([input, layer1])
+    layer2 = Conv1D(filters=64, kernel_size=3, activation=_activation, padding='same')(concat1)
+    concat2 = concatenate([concat1, layer2])
+    layer3 = Flatten()(concat2)
     layer4 = Dense(97, activation=_activation)(layer3)
 
     _model = Model(inputs=input, outputs=layer4, name=_model_name)
@@ -72,14 +74,14 @@ if __name__ == '__main__':
     time_stamp = datetime.datetime.now()
     time_string = '{:02d}-{:02d}-{:02d}-{:02d}-{:02d}'.format(time_stamp.year%100, time_stamp.month, time_stamp.day, time_stamp.hour, time_stamp.minute)
     # print(time_string)
-    _model_name = 'Conv1D'
+    _model_name = 'Conv1D_skips'
     lr = 0.1
     momentum = 0.
     decay = 1e-7
 
     epochs = 500
     batch = 100
-    test_name = 'conv_v0_' + time_string
+    test_name = 'conv_skip_' + time_string
     data = data_prep.main(data_file)
     print(np.shape(data[0]))
     print(np.shape(data[1]))
