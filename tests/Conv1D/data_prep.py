@@ -24,11 +24,11 @@ def data_reshape(_data, _mode='oneax'):
 def data_reshape_oneaxis(_data):
     selected_channel = 1
     batch, time, channels = np.shape(_data)
-    reshaped_data = np.zeros((int(batch * channels / 3), time))
+    reshaped_data = np.zeros((int(batch * channels / 3), time, 1))
     # print(np.shape(reshaped_data))
     for i in range(batch):
         for j in range(int(channels/3)):
-            reshaped_data[i*int(channels/3)+j, :] = np.transpose(_data[i, :, j*3+selected_channel])
+            reshaped_data[i*int(channels/3)+j, :, 0] = np.transpose(_data[i, :, j*3+selected_channel])
 
 
     return reshaped_data
@@ -77,10 +77,10 @@ def normalization(_data):
         else:
             sizes.append((np.shape(_data[i])[0]) + sizes[len(sizes) - 1])
 
-    train_X = _data_concat_normed[0:sizes[0], :]
-    train_Y = _data_concat_normed[sizes[0]:sizes[1], :]
-    test_X = _data_concat_normed[sizes[1]:sizes[2], :]
-    test_Y = _data_concat_normed[sizes[2]:, :]
+    train_X = _data_concat_normed[0:sizes[0], :, :]
+    train_Y = _data_concat_normed[sizes[0]:sizes[1], :, :]
+    test_X = _data_concat_normed[sizes[1]:sizes[2], :, :]
+    test_Y = _data_concat_normed[sizes[2]:, :, :]
     return train_X, train_Y, test_X, test_Y
 
 
@@ -99,11 +99,19 @@ def shuffle(_data, _seed=9):
     return _train_X[0], _train_Y[0], _test_X[0], _test_Y[0]
 
 
+def Conv1_reshape(_data):
+    train_X, train_Y, test_X, test_Y = _data
+    train_Y = train_Y[:, :, 0]
+    test_Y = test_Y[:, :, 0]
+    return train_X, train_Y, test_X, test_Y
+
 def main(data_file):
     data = read(data_file)
     data = data_reshape(data)
     data = normalization(data)
     data = shuffle(data)
+    data = Conv1_reshape(data)
+
     return data
 
 
