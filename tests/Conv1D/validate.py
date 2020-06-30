@@ -62,10 +62,11 @@ def get_all_testfiles(_path):
     return test_file_list
 
 
-def plot_compare(data_1, data_2):
+def plot_compare(data, labels):
     plt.figure()
-    plt.plot(data_1)
-    plt.plot(data_2)
+    for d, l in zip(data, labels):
+        plt.plot(d, label=l)
+    plt.legend()
     # plt.show()
 
 
@@ -80,11 +81,11 @@ def training_loss_graph(_result):
         for i in range(len(loss_history)):
             if i > 0:
                 if abs(loss_history[i] - loss_history[i-1]) > epsilon:
-                    print(abs(loss_history[i] - loss_history[i-1]))
+                    # print(abs(loss_history[i] - loss_history[i-1]))
                     epsilon_threshold = i
     plt.figure()
-    plt.title('loss history')
-    plt.plot(loss_history)
+    plt.title('loss history ({})'.format(epsilon))
+    plt.plot(loss_history, label='training loss')
     plt.axvline(x=epsilon_threshold, color='r', label='epsilon_thr={}'.format(epsilon_threshold))
     plt.legend()
 
@@ -109,13 +110,11 @@ if __name__ == '__main__':
 
     training_loss_graph(picked_result)
 
-
     model = load_model(os.path.join(path, picked_result['model file name']))
-    model.summary()
+    # model.summary()
     predicted = model.predict(data[0][0:10, :])
 
-
-
-    plot_compare(data[0][0, :], data[1][0, :])
-    plot_compare(data[0][0, :], predicted[0, :])
+    # plot_compare([data[0][0, :], data[1][0, :]], ['interpolated', 'ground truth'])
+    # plot_compare([data[0][0, :], predicted[0, :]], ['interpolated', 'predicted'])
+    plot_compare([data[0][0, :], data[1][0, :], predicted[0, :]], ['interpolated', 'ground truth', 'predicted'])
     plt.show()
