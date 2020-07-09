@@ -37,7 +37,7 @@ if prep:
         new_item = np.concatenate((item[:surroundings[0]], resized_kernel, item[-surroundings[1]:]))
         item_list.append(new_item)
     item_list = np.asarray(item_list)
-
+    
 # ***** normalize *****
 # analysis
 do_analysis = False
