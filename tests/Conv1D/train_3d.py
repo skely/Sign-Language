@@ -23,7 +23,7 @@ def define_model():
     # _model.add(Flatten())
     # _model.add(Dense(97, activation=_activation))
 
-    input = Input(shape=(97, 1))
+    input = Input(shape=(97, 3))
     layer1 = Conv1D(filters=64, kernel_size=3, activation=_activation, padding='same')(input)
     concat1 = concatenate([input, layer1])
     layer2 = Conv1D(filters=64, kernel_size=5, activation=_activation, padding='same')(concat1)
@@ -31,7 +31,8 @@ def define_model():
     layer3 = Conv1D(filters=64, kernel_size=7, activation=_activation, padding='same')(concat1)
     concat3 = concatenate([concat2, layer3])
     layer4 = Flatten()(concat3)
-    layer5 = Dense(97, activation=_activation)(layer4)
+    layer5 = Dense(97*3, activation=_activation)(layer4)
+
 
     _model = Model(inputs=input, outputs=layer5, name=_model_name)
     _model.compile(loss=_loss, optimizer=_optimizer, metrics=['mean_squared_error'])
@@ -76,19 +77,19 @@ if __name__ == '__main__':
     time_stamp = datetime.datetime.now()
     time_string = '{:02d}-{:02d}-{:02d}-{:02d}-{:02d}'.format(time_stamp.year%100, time_stamp.month, time_stamp.day, time_stamp.hour, time_stamp.minute)
     # print(time_string)
-    _model_name = 'Conv1D_skips'
+    _model_name = 'Conv3D_skips'
 
-    epochs = 5000
+    epochs = 1000
     batch = 1000
 
     lr = 1e-2
     momentum = 0.9
     decay = 1e-2 / epochs
 
-    test_name = 'conv_skip_' + time_string
-    data = data_prep.main(data_file)
-    print(np.shape(data[0]))
-    print(np.shape(data[1]))
+    test_name = '3Dconv_skip_' + time_string
+    data = data_prep.main_3d(data_file)
+    # print(np.shape(data[0]))
+    # print(np.shape(data[1]))
     model = define_model()
     model, evaluation, history = training(model, data, epochs, batch)
     log()

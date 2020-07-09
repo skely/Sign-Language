@@ -84,9 +84,9 @@ def training_loss_graph(_result):
                     # print(abs(loss_history[i] - loss_history[i-1]))
                     epsilon_threshold = i
     plt.figure()
-    plt.title('loss history ({})'.format(epsilon))
+    plt.title('loss history')
     plt.plot(loss_history, label='training loss')
-    plt.axvline(x=epsilon_threshold, color='r', label='epsilon_thr={}'.format(epsilon_threshold))
+    plt.axvline(x=epsilon_threshold, color='r', label='epsilon_thr=({}) - {}'.format(epsilon, epsilon_threshold))
     plt.legend()
 
 
@@ -100,21 +100,29 @@ if __name__ == '__main__':
 
     test_file_list = get_all_testfiles(path)
     results = read_all_test_files(test_file_list, _verbose=1)
-    data = data_prep.main(data_file)
+    data = data_prep.main_3d(data_file)
 
-    ordered = evaluate_results(results)
-    for o in ordered:
-        print('{} - mse: {}'.format(o['model file name'], o['mse']))
+    tst = data_prep.conv_3d21d(data[0])
 
-    picked_result = ordered[0]
+    print(np.shape(data[0]))
+    print(np.shape(tst))
+    tst = data_prep.conv_1d23d(tst)
+    print(np.shape(tst))
 
-    training_loss_graph(picked_result)
+    # ordered = evaluate_results(results)
+    # for o in ordered:
+    #     print('{} - mse: {}'.format(o['model file name'], o['mse']))
+    #
+    # picked_result = ordered[0]
+    #
+    # training_loss_graph(picked_result)
+    #
+    # model = load_model(os.path.join(path, picked_result['model file name']))
+    # # model.summary()
+    # predicted = model.predict(data[0][0:10, :])
 
-    model = load_model(os.path.join(path, picked_result['model file name']))
-    # model.summary()
-    predicted = model.predict(data[0][0:10, :])
-
-    # plot_compare([data[0][0, :], data[1][0, :]], ['interpolated', 'ground truth'])
+    # plot_compare([tst[0,:]], ['hi'])
+    plot_compare([tst[0, :, 0], data[0][0, :, 0]], ['interpolated', 'ground truth'])
     # plot_compare([data[0][0, :], predicted[0, :]], ['interpolated', 'predicted'])
-    plot_compare([data[0][0, :], data[1][0, :], predicted[0, :]], ['interpolated', 'ground truth', 'predicted'])
+    # plot_compare([data[0][0, :], data[1][0, :], predicted[0, :]], ['interpolated', 'ground truth', 'predicted'])
     plt.show()

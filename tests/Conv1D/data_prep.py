@@ -6,12 +6,11 @@ import matplotlib.pyplot as plt
 
 def data_reshape(_data, _mode='oneax'):
     train_X, train_Y, test_X, test_Y = _data
-
-    if _mode == 'orig':
-        train_X = data_reshape_array(train_X)
-        train_Y = data_reshape_array(train_Y)
-        test_X = data_reshape_array(test_X)
-        test_Y = data_reshape_array(test_Y)
+    if _mode == '3d':
+        train_X = data_reshape_3d(train_X)
+        train_Y = data_reshape_3d(train_Y)
+        test_X = data_reshape_3d(test_X)
+        test_Y = data_reshape_3d(test_Y)
     if _mode == 'oneax':
         train_X = data_reshape_oneaxis(train_X)
         train_Y = data_reshape_oneaxis(train_Y)
@@ -34,11 +33,14 @@ def data_reshape_oneaxis(_data):
     return reshaped_data
 
 
-def data_reshape_array(_data):
+def data_reshape_3d(_data):
     batch, time, channels = np.shape(_data)
-    reshaped_data = np.zeros((batch*channels, time))
+    reshaped_data = np.zeros((int(batch*channels/3), time, 3))
     for i in range(batch):
-        reshaped_data[i*channels:(i+1)*channels, :] = np.transpose(_data[i, :, :])
+        for ch in range(int(channels/3)):
+            reshaped_data[i*ch:(i+1)*ch, :, 0] = np.transpose(_data[i, :, ch*3])
+            reshaped_data[i*ch:(i+1)*ch, :, 1] = np.transpose(_data[i, :, ch*3+1])
+            reshaped_data[i*ch:(i+1)*ch, :, 2] = np.transpose(_data[i, :, ch*3+2])
     return reshaped_data
 
 
@@ -105,6 +107,15 @@ def Conv1_reshape(_data):
     test_Y = test_Y[:, :, 0]
     return train_X, train_Y, test_X, test_Y
 
+def Conv3d_reshape(_data):
+    train_X, train_Y, test_X, test_Y = _data
+    # print(np.shape(train_Y))
+    train_Y = np.concatenate((train_Y[:, :, 0], train_Y[:, :, 1], train_Y[:, :, 2]), axis=1)
+    # print(np.shape(train_Y))
+    test_Y = np.concatenate((test_Y[:, :, 0], test_Y[:, :, 1], test_Y[:, :, 2]), axis=1)
+    return train_X, train_Y, test_X, test_Y
+
+
 def main(data_file):
     data = read(data_file)
     data = data_reshape(data)
@@ -114,6 +125,37 @@ def main(data_file):
 
     return data
 
+
+def main_3d(data_file):
+    data = read(data_file)
+    data = data_reshape(data, _mode='3d')
+    data = normalization(data)
+    data = shuffle(data)
+    data = Conv3d_reshape(data)
+
+    return data
+
+
+def conv_3d21d(_data):
+    batch, time, channels = np.shape(_data)
+    new_data = np.zeros((batch, time*channels))
+    for b in range(batch):
+        for t in range(time):
+            new_data[b, t] = _data[b, t, 0]
+            new_data[b, t+1] = _data[b, t, 1]
+            new_data[b, t+2] = _data[b, t, 2]
+    return new_data
+
+
+def conv_1d23d(_data, _channels=3):
+    batch, time = np.shape(_data)
+    time_point = int(time / _channels)
+    new_data = np.zeros((batch, time_point, _channels))
+    for b in range(batch):
+        # for t in range(time_point):
+        for ch in range(_channels):
+            new_data[b, :, ch] = _data[b, ch*time_point:(ch+1)*time_point]
+    return new_data
 
 if __name__ == '__main__':
     data_file = '/home/jedle/data/Sign-Language/_source_clean/testing/prepared_data_glo_30-30.npz'

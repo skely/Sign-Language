@@ -12,7 +12,7 @@ bvh_src_file = '/home/jedle/data/Sign-Language/_source_clean/bvh/16_05_20_a_R.bv
 dict_file = os.path.join(source_dir, 'ultimate_dictionary2.txt')
 # take_dict_file = os.path.join(source_dir, 'dictionary_takes_v3.txt')
 # dict_dict_file = os.path.join(source_dir, 'dictionary_dict_v4.txt')
-prepared_data_file = os.path.join(source_dir, 'prepared_data_30-30.npz')
+prepared_data_file = os.path.join(source_dir, 'prepared_data_30-30_ang.npz')
 
 m, c, _ = BVH.get_joint_list(bvh_src_file)
 selected_sign_id = ''  # transitions
@@ -61,7 +61,7 @@ if do_analysis:
 # normalization (fuck the outliers)
 # normalization to (-360, 360) -> (0-1)
 _norm_scale = np.array([-360, 360])
-item_list = data_prep.normalize(item_list, _norm_scale)
+# item_list = data_prep.normalize(item_list, _norm_scale)
 
 # data - label split
 # NN input data (data_X) : cubic approximation of trajectories
