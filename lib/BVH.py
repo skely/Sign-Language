@@ -15,7 +15,7 @@ def load_raw(_in_file):
         if 'MOTION' in line:
                 headder = i+1
 
-    return content[:headder], content[headder+2:]
+    return content[:headder+2], content[headder+2:]
 
 
 def load_trajectory(_in_file):
@@ -213,3 +213,37 @@ def get_all_ancestors(_joint_name, _tree_structure_joint_list):
         stack.append(get_ancestor(tmp_name, _tree_structure_joint_list))
         tmp_name = stack[-1]
     return stack
+
+
+def generate_BVH(_trajectory, _BVH_output_file, _template_BVH_file, channels='rotation'):
+    template_header, _ = load_raw(_template_BVH_file)
+    template_trajectories = load_trajectory(_template_BVH_file)
+
+    trajectory_length, feature_length = np.shape(_trajectory)
+    write_stream = template_header[:-2]
+    write_stream.append('Frames: {}\n'.format(trajectory_length))
+    write_stream.append(template_header[-1])  # fps
+
+    expected_number_of_channels = np.size(template_trajectories, 1)
+
+    m, c, _ = get_joint_list(_template_BVH_file)
+    channel_ids = get_joint_id(m, c, '', _channel_name=channels)
+
+    for i in range(trajectory_length):
+        new_line = ''
+        iter_pick = 0
+        for j in range(expected_number_of_channels):
+            if j in channel_ids:
+                tmp = _trajectory[i, iter_pick]
+                iter_pick += 1
+            else:
+                tmp = np.mean(template_trajectories[:, j])
+
+            if j < expected_number_of_channels - 1:
+                new_line += '{:.6f} '.format(tmp)
+            else:
+                new_line += '{:.6f}\n'.format(tmp)
+        write_stream.append(new_line)
+
+    with open(_BVH_output_file, 'w+') as f:
+        f.writelines(write_stream)

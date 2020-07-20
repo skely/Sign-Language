@@ -73,23 +73,30 @@ def log():
 
 if __name__ == '__main__':
     path = '/home/jedle/Projects/Sign-Language/tests/Conv1D/tests'
-    data_file = '/home/jedle/data/Sign-Language/_source_clean/testing/prepared_data_glo_30-30.npz'
+    # data_file = '/home/jedle/data/Sign-Language/_source_clean/testing/prepared_data_glo_30-30.npz'
+    data_file = '/home/jedle/data/Sign-Language/_source_clean/prepared_data_30-30_aug10times2.npz'
     time_stamp = datetime.datetime.now()
     time_string = '{:02d}-{:02d}-{:02d}-{:02d}-{:02d}'.format(time_stamp.year%100, time_stamp.month, time_stamp.day, time_stamp.hour, time_stamp.minute)
     # print(time_string)
     _model_name = 'Conv3D_skips'
 
-    epochs = 1000
+    epochs = 200
     batch = 1000
 
     lr = 1e-2
     momentum = 0.9
     decay = 1e-2 / epochs
 
-    test_name = '3Dconv_skip_' + time_string
+    test_name = '3Dconv_skip_angular' + time_string
     data = data_prep.main_3d(data_file)
-    # print(np.shape(data[0]))
-    # print(np.shape(data[1]))
+    print(np.shape(data[0]))
+    print(np.shape(data[1]))
+    batch_item = 0
+    plt.plot(data[0][batch_item, :, 0])
+    plt.plot(data[0][batch_item, :, 1])
+    plt.plot(data[0][batch_item, :, 2])
+    plt.show()
+    # plt.plot(data[0][0, :, 0])
     model = define_model()
     model, evaluation, history = training(model, data, epochs, batch)
     log()

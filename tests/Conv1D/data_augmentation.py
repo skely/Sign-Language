@@ -73,24 +73,19 @@ def analysis2(_data_array):
 
 if __name__ == '__main__':
     source_dir = '/home/jedle/data/Sign-Language/_source_clean/'
-    prepared_data_file = os.path.join(source_dir, 'prepared_data_30-30_ang.npz')
+    prepared_data_file = os.path.join(source_dir, 'prepared_data_30-30_aug10times2.npz')
     data_loaded = np.load(prepared_data_file)
-    # sig_vec = analysis(data_loaded, threshold=0.008)
+
     data_array = data_loaded['train_Y']
-    threshold = 0.0011  # from analysis 2
-    noise = 0.01  # 0.1%
+    batch, time, features = np.shape(data_array)
+    print(batch, time, features)
+    for i in range(batch):
+        print(np.average(data_array[i, :, 0]))
 
-    batch, time, channels = np.shape(data_array)
-    new_array = np.zeros_like(data_array)
-    for b in range(batch):
-        # frame_diffs = np.array((channels))
-        for ch in range(channels):
-            tmp_diff = np.max(np.diff(data_array[b, :, ch])) - np.min(np.diff(data_array[b, :, ch]))
-            white_noise = np.random.normal(0, tmp_diff*noise, size=time)
-            new_array[b, :, ch] = data_array[b, :, ch] + white_noise
-
-    plt.plot(new_array[20, :, 20], 'r')
-    plt.plot(data_array[20, :, 20], 'g')
-    plt.show()
-
-
+        # plt.figure()
+        # plt.plot(data_array[i, :, 0])
+        # plt.figure()
+        # plt.plot(data_array[i, :, 1])
+        # plt.figure()
+        # plt.plot(data_array[i, :, 2])
+        # plt.show()

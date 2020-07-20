@@ -94,14 +94,14 @@ def training_loss_graph(_result):
 
 if __name__ == '__main__':
     path = '/home/jedle/Projects/Sign-Language/tests/Conv1D/tests'
-    data_file = '/home/jedle/data/Sign-Language/_source_clean/testing/prepared_data_glo_30-30.npz'
+    data_file = '/home/jedle/data/Sign-Language/_source_clean/prepared_data_ang_30-30_aug10times.npz'
 
     epsilon = 10e-8
 
     test_file_list = get_all_testfiles(path)
     results = read_all_test_files(test_file_list, _verbose=1)
-    data = data_prep.main_3d(data_file)
 
+    data = data_prep.main_3d(data_file)
     tst = data_prep.conv_3d21d(data[0])
 
     print(np.shape(data[0]))
