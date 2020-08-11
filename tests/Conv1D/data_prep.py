@@ -2,7 +2,7 @@ import os
 import numpy as np
 import random
 import matplotlib.pyplot as plt
-
+import h5py
 
 def data_reshape(_data, _mode='oneax'):
     train_X, train_Y, test_X, test_Y = _data
@@ -156,6 +156,25 @@ def conv_1d23d(_data, _channels=3):
         for ch in range(_channels):
             new_data[b, :, ch] = _data[b, ch*time_point:(ch+1)*time_point]
     return new_data
+
+
+def save_HDF5(_data, _file_name):
+    train_X, train_Y, test_X, test_Y = _data
+    with h5py.File(_file_name, 'w') as f:
+        f.create_dataset('train_X', data=train_X)
+        f.create_dataset('train_Y', data=train_Y)
+        f.create_dataset('test_X', data=test_X)
+        f.create_dataset('test_Y', data=test_Y)
+
+
+def load_HDF5(_file_name):
+    with h5py.File(_file_name, 'r') as f:
+        train_X = np.array(f['train_X'])
+        train_Y = np.array(f['train_Y'])
+        test_X = np.array(f['test_X'])
+        test_Y = np.array(f['test_Y'])
+    data = train_X, train_Y, test_X, test_Y
+    return data
 
 if __name__ == '__main__':
     data_file = '/home/jedle/data/Sign-Language/_source_clean/testing/prepared_data_glo_30-30.npz'

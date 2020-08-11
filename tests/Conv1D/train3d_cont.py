@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 # import tests.Dense_2.data_prep as data_prep
 import data_prep
 from keras.layers import Dense, Input, Conv1D, Flatten, MaxPooling1D, concatenate
-from keras.models import Model, Sequential
+from keras.models import Model, Sequential, load_model
 from keras.utils import plot_model
 from keras.optimizers import sgd
 
@@ -50,7 +50,7 @@ def training(_model, _data, _epochs, _batch_size):
 
 
 def log():
-    plot_model(model, to_file=os.path.join(path, test_name), show_shapes=True)     # saves figure of model
+    # plot_model(model, to_file=os.path.join(path, test_name), show_shapes=True)     # saves figure of model
     model.save(os.path.join(path, 'model_{}.h5'.format(test_name)))                # saves model hdf5
     with open(os.path.join(path, 'history_{}.pkl'.format(test_name)), 'wb') as f:  # saves training history
         pickle.dump(history.history, f, pickle.HIGHEST_PROTOCOL)
@@ -73,38 +73,34 @@ def log():
 
 
 if __name__ == '__main__':
-    # path = '/home/jedle/Projects/Sign-Language/tests/Conv1D/tests'
-    path = '/storage/plzen1/home/jedlicka/Sign-Language/tests/'
-    # data_file = '/home/jedle/data/Sign-Language/_source_clean/testing/prepared_data_glo_30-30.npz'
-    data_file = '/storage/plzen1/home/jedlicka/Sign-Language/data/prepared_data_30-30_aug10times2.npz'
+    path = '/home/jedle/Projects/Sign-Language/tests/Conv1D/tests'
+    # path = '/storage/plzen1/home/jedlicka/Sign-Language/tests/'
+    data_file = '/home/jedle/data/Sign-Language/_source_clean/testing/prepared_data_glo_30-30.npz'
+    # data_file = '/storage/plzen1/home/jedlicka/Sign-Language/data/prepared_data_30-30_aug10times2.npz'
     time_stamp = datetime.datetime.now()
     time_string = '{:02d}-{:02d}-{:02d}-{:02d}-{:02d}'.format(time_stamp.year%100, time_stamp.month, time_stamp.day, time_stamp.hour, time_stamp.minute)
     # print(time_string)
     _model_name = 'Conv3D_skips'
 
     prep_data = False
-    epochs = 3000
+    epochs = 2000
     batch = 500
 
     lr = 1e-1
     momentum = 0.8
     decay = lr / epochs
 
-    test_name = '3Daugmented10_' + time_string
+    test_name = 'meta_cont_' + time_string
 
     if prep_data:
         data = data_prep.main_3d(data_file)
         data_prep.save_HDF5(data, os.path.join(path, 'prepared_data_ang_aug10.h5'))
     else:
         data = data_prep.load_HDF5(os.path.join(path, 'prepared_data_ang_aug10.h5'))
-    # print(np.shape(data[0]))
-    # print(np.shape(data[1]))
-    # batch_item = 0
-    # plt.plot(data[0][batch_item, :, 0])
-    # plt.plot(data[0][batch_item, :, 1])
-    # plt.plot(data[0][batch_item, :, 2])
-    # plt.show()
-    # plt.plot(data[0][0, :, 0])
-    model = define_model()
+
+    # model = define_model()
+    model_file_name = 'model_3Daugmented10_20-08-03-11-20.h5'
+    model = load_model(os.path.join(path, model_file_name))
+
     model, evaluation, history = training(model, data, epochs, batch)
     log()

@@ -165,3 +165,24 @@ def sign_comparison(_sign_1, _sign_2, _method='dtw_normalized'):
         _distance, _path = fastdtw.dtw(_sign_1, _sign_2)
         _normalized = (_distance/len(_path))/np.size(_sign_1, 1)
     return _normalized
+
+
+def augmentation_noise(_data, _rate=10, _noise_level=0.01):
+    """
+    Add white noise to data. New data = data +- (max-min) * noise level
+    :param _data:
+    :param _rate:
+    :param _noise_level:
+    :return:
+    """
+    batch, time, channels = np.shape(_data)
+    new_array = np.zeros((batch * _rate, time, channels))
+
+    for b in range(batch):
+        for ch in range(channels):
+            tmp_diff = np.max(np.diff(_data[b, :, ch])) - np.min(np.diff(_data[b, :, ch]))
+            for i in range(_rate):
+                white_noise = np.random.normal(0, tmp_diff * _noise_level, size=time)
+                new_array[_rate * b + i, :, ch] = _data[b, :, ch] + white_noise
+
+    return new_array

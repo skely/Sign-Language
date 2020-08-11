@@ -2,14 +2,15 @@ import os
 import pickle
 import datetime
 import numpy as np
+from numpy.testing import assert_allclose
 import matplotlib.pyplot as plt
 # import tests.Dense_2.data_prep as data_prep
 import data_prep
 from keras.layers import Dense, Input, Conv1D, Flatten, MaxPooling1D, concatenate
-from keras.models import Model, Sequential
+from keras.models import Model, Sequential, load_model
 from keras.utils import plot_model
 from keras.optimizers import sgd
-
+from keras.callbacks import ModelCheckpoint
 
 def define_model():
     _loss = 'mean_squared_error'
@@ -42,8 +43,8 @@ def define_model():
     return _model
 
 
-def training(_model, _data, _epochs, _batch_size):
-    _history = _model.fit(_data[0], _data[1], validation_data=(_data[2], _data[3]), epochs=_epochs, batch_size=_batch_size, verbose=2)
+def training(_model, _data, _epochs, _batch_size, _callbacks):
+    _history = _model.fit(_data[0], _data[1], validation_data=(_data[2], _data[3]), epochs=_epochs, batch_size=_batch_size, verbose=2, callbacks=_callbacks)
     _evaluations = _model.evaluate(_data[2], _data[3])
     print('loss: {}, mse: {}'.format(_evaluations[0], _evaluations[1]))
     return _model, _evaluations, _history
@@ -51,7 +52,9 @@ def training(_model, _data, _epochs, _batch_size):
 
 def log():
     plot_model(model, to_file=os.path.join(path, test_name), show_shapes=True)     # saves figure of model
-    model.save(os.path.join(path, 'model_{}.h5'.format(test_name)))                # saves model hdf5
+    model_file_name = os.path.join(path, 'model_{}.h5'.format(test_name))
+    model.save(model_file_name)                                                    # saves model hdf5
+
     with open(os.path.join(path, 'history_{}.pkl'.format(test_name)), 'wb') as f:  # saves training history
         pickle.dump(history.history, f, pickle.HIGHEST_PROTOCOL)
 
@@ -73,17 +76,18 @@ def log():
 
 
 if __name__ == '__main__':
-    # path = '/home/jedle/Projects/Sign-Language/tests/Conv1D/tests'
-    path = '/storage/plzen1/home/jedlicka/Sign-Language/tests/'
-    # data_file = '/home/jedle/data/Sign-Language/_source_clean/testing/prepared_data_glo_30-30.npz'
-    data_file = '/storage/plzen1/home/jedlicka/Sign-Language/data/prepared_data_30-30_aug10times2.npz'
+    path = '/home/jedle/Projects/Sign-Language/tests/Conv1D/tests'
+    # path = '/storage/plzen1/home/jedlicka/Sign-Language/tests/'
+    data_file = '/home/jedle/data/Sign-Language/_source_clean/testing/prepared_data_glo_30-30.npz'
+    # data_file = '/storage/plzen1/home/jedlicka/Sign-Language/data/prepared_data_30-30_aug10times2.npz'
+
     time_stamp = datetime.datetime.now()
     time_string = '{:02d}-{:02d}-{:02d}-{:02d}-{:02d}'.format(time_stamp.year%100, time_stamp.month, time_stamp.day, time_stamp.hour, time_stamp.minute)
     # print(time_string)
     _model_name = 'Conv3D_skips'
 
     prep_data = False
-    epochs = 3000
+    epochs = 5
     batch = 500
 
     lr = 1e-1
@@ -106,5 +110,15 @@ if __name__ == '__main__':
     # plt.show()
     # plt.plot(data[0][0, :, 0])
     model = define_model()
-    model, evaluation, history = training(model, data, epochs, batch)
+    checkpoint_file = 'checkpoint_tst.h5'
+    checkpoint = ModelCheckpoint(checkpoint_file, monitor='loss', verbose=1, save_best_only=True, mode='min')
+    callbacks_list = [checkpoint]
+    model, evaluation, history = training(model, data, epochs, batch, callbacks_list)
     log()
+
+    new_model = load_model(checkpoint_file)
+    assert_allclose(model.predict(data[0]), new_model.predict(data[0]), 1e-5)
+
+    checkpoint = ModelCheckpoint(checkpoint_file, monitor='loss', verbose=1, save_best_only=True, mode='min')
+    callbacks_list = [checkpoint]
+    new_model.fit(data[0], data[1], epochs=5, batch_size=500, callbacks=callbacks_list)

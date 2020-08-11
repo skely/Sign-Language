@@ -216,6 +216,14 @@ def get_all_ancestors(_joint_name, _tree_structure_joint_list):
 
 
 def generate_BVH(_trajectory, _BVH_output_file, _template_BVH_file, channels='rotation'):
+    """
+    Saves angular trajectory as BVH file (using template BVH for header creation)
+    :param _trajectory:
+    :param _BVH_output_file:
+    :param _template_BVH_file:
+    :param channels:
+    :return:
+    """
     template_header, _ = load_raw(_template_BVH_file)
     template_trajectories = load_trajectory(_template_BVH_file)
 

@@ -13,7 +13,7 @@ bvh_src_file = '/home/jedle/data/Sign-Language/_source_clean/bvh/16_05_20_a_R.bv
 dict_file = os.path.join(source_dir, 'ultimate_dictionary2.txt')
 # take_dict_file = os.path.join(source_dir, 'dictionary_takes_v3.txt')
 # dict_dict_file = os.path.join(source_dir, 'dictionary_dict_v4.txt')
-prepared_data_file = os.path.join(source_dir, 'prepared_data_30-30_aug10times2.npz')
+prepared_data_file = os.path.join(source_dir, 'prepared_data_30-30_aug100times.npz')
 
 m, c, _ = BVH.get_joint_list(bvh_src_file)
 selected_sign_id = ''  # transitions
@@ -38,6 +38,7 @@ if prep:
         new_item = np.concatenate((item[:surroundings[0]], resized_kernel, item[-surroundings[1]:]))
         item_list.append(new_item)
     item_list = np.asarray(item_list)
+
 # ***** ANALYSE
 # print(np.shape(item_list))
 # batch, time, feature = np.shape(item_list)
@@ -47,19 +48,21 @@ if prep:
 #         print(np.average(item_list[i, :, j]))
 
 # ***** add noisy items to list *****
-noise = 0.01  # 0.1%
-augmentation = 10
-batch, time, channels = np.shape(item_list)
-new_array = np.zeros((batch*augmentation, time, channels))
+# noise = 0.01  # 0.1%
+# augmentation = 10
+# batch, time, channels = np.shape(item_list)
+# new_array = np.zeros((batch*augmentation, time, channels))
+#
+# for b in range(batch):
+#     # frame_diffs = np.array((channels))
+#     for ch in range(channels):
+#         tmp_diff = np.max(np.diff(item_list[b, :, ch])) - np.min(np.diff(item_list[b, :, ch]))
+#         for i in range(augmentation):
+#             white_noise = np.random.normal(0, tmp_diff*noise, size=time)
+#             new_array[10*b+i, :, ch] = item_list[b, :, ch] + white_noise
+# item_list = new_array
 
-for b in range(batch):
-    # frame_diffs = np.array((channels))
-    for ch in range(channels):
-        tmp_diff = np.max(np.diff(item_list[b, :, ch])) - np.min(np.diff(item_list[b, :, ch]))
-        for i in range(augmentation):
-            white_noise = np.random.normal(0, tmp_diff*noise, size=time)
-            new_array[10*b+i, :, ch] = item_list[b, :, ch] + white_noise
-item_list = new_array
+item_list = data_prep.augmentation_noise(item_list, 10, 0.1)
 
 # ***** normalize *****
 angular_limits = np.array((-360, 360))
@@ -84,7 +87,7 @@ if do_analysis:
 
 # normalization (fuck the outliers)
 # normalization to (-360, 360) -> (0-1)
-_norm_scale = np.array([angular_limits[0], angular_limits[1]])
+# _norm_scale = np.array([angular_limits[0], angular_limits[1]])
 # item_list = data_prep.normalize(item_list, _norm_scale)
 
 # data - label split
