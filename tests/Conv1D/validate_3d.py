@@ -107,8 +107,6 @@ if __name__ == '__main__':
 
     # select model
     test_file_list = get_all_testfiles(path)
-    for t in test_file_list:
-        print(t)
     results = read_all_test_files(test_file_list, _verbose=1)
     for line in results:
         print(line)
