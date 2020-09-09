@@ -50,10 +50,8 @@ def read_test_file(_test_file, _verbose=0):
 
 def evaluate_results(_results, n_best=-1):
     sorted_dict = sorted(_results, key=lambda i: float(i['mse']), reverse=False)
-    if n_best == -1:
-        return sorted_dict
-    else:
-        return sorted_dict[0:n_best]
+    return sorted_dict[0:n_best]
+
 
 
 def get_all_testfiles(_path):
@@ -62,41 +60,28 @@ def get_all_testfiles(_path):
     return test_file_list
 
 
-def plot_compare(data, labels):
+def plot_compare(data_1, data_2):
     plt.figure()
-    for d, l in zip(data, labels):
-        plt.plot(d, label=l)
-    plt.legend()
+    plt.plot(data_1)
+    plt.plot(data_2)
     # plt.show()
 
 
 def training_loss_graph(_result):
     # print(_result['training history'])
     history = np.load(os.path.join(path, _result['training history']), allow_pickle=True)
+    print(type(history))
+    print(history.keys())
     # history = np.asarray(history)
-
-    loss_history = history['loss']
-    epsilon_threshold = 0
-    if 'epsilon' in globals():
-        for i in range(len(loss_history)):
-            if i > 0:
-                if abs(loss_history[i] - loss_history[i-1]) > epsilon:
-                    # print(abs(loss_history[i] - loss_history[i-1]))
-                    epsilon_threshold = i
     plt.figure()
     plt.title('loss history')
-    plt.plot(loss_history, label='training loss')
-    plt.axvline(x=epsilon_threshold, color='r', label='epsilon_thr=({}) - {}'.format(epsilon, epsilon_threshold))
-    plt.legend()
-
+    plt.plot(history['loss'])
 
 
 
 if __name__ == '__main__':
-    path = '/home/jedle/Projects/Sign-Language/tests/Conv1D/tests'
+    path = '/tests/old/Dense_2/tests'
     data_file = '/home/jedle/data/Sign-Language/_source_clean/testing/prepared_data_glo_30-30.npz'
-
-    epsilon = 10e-8
 
     test_file_list = get_all_testfiles(path)
     results = read_all_test_files(test_file_list, _verbose=1)
@@ -111,10 +96,11 @@ if __name__ == '__main__':
     training_loss_graph(picked_result)
 
     model = load_model(os.path.join(path, picked_result['model file name']))
-    # model.summary()
+    model.summary()
     predicted = model.predict(data[0][0:10, :])
 
-    # plot_compare([data[0][0, :], data[1][0, :]], ['interpolated', 'ground truth'])
-    # plot_compare([data[0][0, :], predicted[0, :]], ['interpolated', 'predicted'])
-    plot_compare([data[0][0, :], data[1][0, :], predicted[0, :]], ['interpolated', 'ground truth', 'predicted'])
+
+
+    plot_compare(data[0][0, :], data[1][0, :])
+    plot_compare(data[0][0, :], predicted[0, :])
     plt.show()

@@ -4,8 +4,8 @@ import h5py
 import matplotlib.pyplot as plt
 
 if __name__ == '__main__':
-    path = '/home/jedle/Projects/Sign-Language/tests/Conv1D/tests'
-    out_path = '/home/jedle/Projects/Sign-Language/tests/Conv3D/tests'
+    path = '/tests/old/Conv1D/tests'
+    out_path = '/tests/old/Conv3D/tests'
     data_h5_file = 'prepared_data_ang_aug10.h5'
     out_h5_file = 'simple_aug10.h5'
 

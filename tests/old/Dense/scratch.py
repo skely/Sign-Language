@@ -7,7 +7,7 @@ def get_best(_file, axis, n_top):
     sorted_read = read[read[:, axis].argsort()[::-1]]
     return sorted_read[:n_top]
 
-path = '/home/jedle/Projects/Sign-Language/tests/Dense'
+path = '/tests/old/Dense'
 files = ['results1.npy', 'results2.npy', 'results3.npy']
 
 for f in files:

@@ -1,7 +1,6 @@
 import os
 import datetime
-from tests.LSTM import LSTM_train
-
+from tests.old.LSTM import LSTM_train
 
 if __name__ == '__main__':
     ref_time = datetime.datetime.now()

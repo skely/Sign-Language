@@ -3,6 +3,8 @@ import os
 import numpy as np
 import sys
 import matplotlib.pyplot as plt
+import h5py
+
 
 # data_dir = '/home/jedle/data/Sign-Language/_source_clean/dataprep/'
 source_dir = '/home/jedle/data/Sign-Language/_source_clean/'
@@ -13,7 +15,9 @@ bvh_src_file = '/home/jedle/data/Sign-Language/_source_clean/bvh/16_05_20_a_R.bv
 dict_file = os.path.join(source_dir, 'ultimate_dictionary2.txt')
 # take_dict_file = os.path.join(source_dir, 'dictionary_takes_v3.txt')
 # dict_dict_file = os.path.join(source_dir, 'dictionary_dict_v4.txt')
-prepared_data_file = os.path.join(source_dir, 'prepared_data_30-30_aug100times.npz')
+# prepared_data_file = os.path.join(source_dir, 'prepared_data_ang_30-30_aug10_b.npz')
+prepared_data_file = os.path.join(source_dir, 'prepared_data_ang_30-30_aug20.h5')
+# augmented_data_file = os.path.join(source_dir, 'pure_30-30_aug10.h5')
 
 m, c, _ = BVH.get_joint_list(bvh_src_file)
 selected_sign_id = ''  # transitions
@@ -48,21 +52,10 @@ if prep:
 #         print(np.average(item_list[i, :, j]))
 
 # ***** add noisy items to list *****
-# noise = 0.01  # 0.1%
-# augmentation = 10
-# batch, time, channels = np.shape(item_list)
-# new_array = np.zeros((batch*augmentation, time, channels))
-#
-# for b in range(batch):
-#     # frame_diffs = np.array((channels))
-#     for ch in range(channels):
-#         tmp_diff = np.max(np.diff(item_list[b, :, ch])) - np.min(np.diff(item_list[b, :, ch]))
-#         for i in range(augmentation):
-#             white_noise = np.random.normal(0, tmp_diff*noise, size=time)
-#             new_array[10*b+i, :, ch] = item_list[b, :, ch] + white_noise
-# item_list = new_array
+noise = 0.01  # 0.1%
+augmentation = 20
 
-item_list = data_prep.augmentation_noise(item_list, 10, 0.1)
+item_list = data_prep.augmentation_noise(item_list, augmentation, noise)
 
 # ***** normalize *****
 angular_limits = np.array((-360, 360))
@@ -87,15 +80,23 @@ if do_analysis:
 
 # normalization (fuck the outliers)
 # normalization to (-360, 360) -> (0-1)
-# _norm_scale = np.array([angular_limits[0], angular_limits[1]])
-# item_list = data_prep.normalize(item_list, _norm_scale)
+_norm_scale = np.array([angular_limits[0], angular_limits[1]])
+item_list = data_prep.normalize(item_list, _norm_scale)
 
 # data - label split
 # NN input data (data_X) : cubic approximation of trajectories
+
+# *** augmented data save
+# hf = h5py.File(augmented_data_file, 'w')
+# hf.create_dataset('data', data=item_list)
+# hf.close()
+
+# *** train - test data preparation (interpolation of transition)
 data_Y = item_list.copy()
 data_X = item_list.copy()
 
 tot_len = len(item_list)
+print('Train - test split and preparations:')
 for i, item in enumerate(item_list):
     item_bef = item[:surroundings[0]+1, :]
     item_aft = item[-surroundings[1]-1:, :]
@@ -118,4 +119,9 @@ test_Y = data_Y[:split_pos, :, :]
 train_X = data_X[split_pos:, :, :]
 test_X = data_X[:split_pos, :, :]
 
+# h5file = h5py.File(prepared_data_file, 'w')
+# h5file.create_dataset('train_X', data=train_X)
+# h5file.create_dataset('test_X', data=test_X)
+# h5file.create_dataset('train_Y', data=train_Y)
+# h5file.create_dataset('test_Y', data=test_Y)
 np.savez(prepared_data_file, train_Y=train_Y, test_Y=test_Y, train_X=train_X, test_X=test_X)

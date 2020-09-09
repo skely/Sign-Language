@@ -1,28 +1,22 @@
 import os
+import h5py
 import pickle
 import datetime
 import numpy as np
-from numpy.testing import assert_allclose
 import matplotlib.pyplot as plt
 # import tests.Dense_2.data_prep as data_prep
-import data_prep
+# import data_prep
 from keras.layers import Dense, Input, Conv1D, Flatten, MaxPooling1D, concatenate
 from keras.models import Model, Sequential, load_model
 from keras.utils import plot_model
 from keras.optimizers import sgd
-from keras.callbacks import ModelCheckpoint
+
 
 def define_model():
     _loss = 'mean_squared_error'
     _optimizer = 'sgd'
-    _optimizer = sgd(lr, momentum, decay=decay)
+    _optimizer = sgd(lr=lr, momentum=momentum, decay=decay)
     _activation = 'sigmoid'
-
-    # _model = Sequential()
-    # _model.add(Conv1D(filters=64, kernel_size=3, activation=_activation, input_shape=(97, 1)))
-    # _model.add(Conv1D(filters=64, kernel_size=3, activation=_activation))
-    # _model.add(Flatten())
-    # _model.add(Dense(97, activation=_activation))
 
     input = Input(shape=(97, 3))
     layer1 = Conv1D(filters=8, kernel_size=3, activation=_activation, padding='same')(input)
@@ -43,18 +37,16 @@ def define_model():
     return _model
 
 
-def training(_model, _data, _epochs, _batch_size, _callbacks):
-    _history = _model.fit(_data[0], _data[1], validation_data=(_data[2], _data[3]), epochs=_epochs, batch_size=_batch_size, verbose=2, callbacks=_callbacks)
+def training(_model, _data, _epochs, _batch_size):
+    _history = _model.fit(_data[0], _data[1], validation_data=(_data[2], _data[3]), epochs=_epochs, batch_size=_batch_size, verbose=2)
     _evaluations = _model.evaluate(_data[2], _data[3])
     print('loss: {}, mse: {}'.format(_evaluations[0], _evaluations[1]))
     return _model, _evaluations, _history
 
 
 def log():
-    plot_model(model, to_file=os.path.join(path, test_name), show_shapes=True)     # saves figure of model
-    model_file_name = os.path.join(path, 'model_{}.h5'.format(test_name))
-    model.save(model_file_name)                                                    # saves model hdf5
-
+    # plot_model(model, to_file=os.path.join(path, test_name), show_shapes=True)     # saves figure of model
+    model.save(os.path.join(path, 'model_{}.h5'.format(test_name)))                # saves model hdf5
     with open(os.path.join(path, 'history_{}.pkl'.format(test_name)), 'wb') as f:  # saves training history
         pickle.dump(history.history, f, pickle.HIGHEST_PROTOCOL)
 
@@ -76,49 +68,39 @@ def log():
 
 
 if __name__ == '__main__':
-    path = '/home/jedle/Projects/Sign-Language/tests/Conv1D/tests'
+    path = '/tests/old/Conv3D/tests'
     # path = '/storage/plzen1/home/jedlicka/Sign-Language/tests/'
-    data_file = '/home/jedle/data/Sign-Language/_source_clean/testing/prepared_data_glo_30-30.npz'
-    # data_file = '/storage/plzen1/home/jedlicka/Sign-Language/data/prepared_data_30-30_aug10times2.npz'
+    data_file = '3D_aug10.h5'
+    model_file_name = 'model_3D_20-09-03-14-39.h5'
+
 
     time_stamp = datetime.datetime.now()
     time_string = '{:02d}-{:02d}-{:02d}-{:02d}-{:02d}'.format(time_stamp.year%100, time_stamp.month, time_stamp.day, time_stamp.hour, time_stamp.minute)
     # print(time_string)
     _model_name = 'Conv3D_skips'
-
     prep_data = False
-    epochs = 5
+    epochs = 3
     batch = 500
-
     lr = 1e-1
-    momentum = 0.8
+    momentum = 0
     decay = lr / epochs
+    test_name = '3D_' + time_string
 
-    test_name = '3Daugmented10_' + time_string
 
-    if prep_data:
-        data = data_prep.main_3d(data_file)
-        data_prep.save_HDF5(data, os.path.join(path, 'prepared_data_ang_aug10.h5'))
-    else:
-        data = data_prep.load_HDF5(os.path.join(path, 'prepared_data_ang_aug10.h5'))
-    # print(np.shape(data[0]))
-    # print(np.shape(data[1]))
-    # batch_item = 0
-    # plt.plot(data[0][batch_item, :, 0])
-    # plt.plot(data[0][batch_item, :, 1])
-    # plt.plot(data[0][batch_item, :, 2])
-    # plt.show()
-    # plt.plot(data[0][0, :, 0])
-    model = define_model()
-    checkpoint_file = 'checkpoint_tst.h5'
-    checkpoint = ModelCheckpoint(checkpoint_file, monitor='loss', verbose=1, save_best_only=True, mode='min')
-    callbacks_list = [checkpoint]
-    model, evaluation, history = training(model, data, epochs, batch, callbacks_list)
+    f = h5py.File(os.path.join(path, data_file), 'r')
+    train_X = np.array(f['train_X'])
+    train_Y = np.array(f['train_Y'])
+    test_X = np.array(f['test_X'])
+    test_Y = np.array(f['test_Y'])
+
+    print(np.shape(train_X))
+    print(np.shape(test_X))
+    print(np.shape(train_Y))
+    print(np.shape(test_Y))
+    data = train_X, train_Y, test_X, test_Y
+
+    #
+    # model = define_model()
+    model = load_model(os.path.join(path, model_file_name))
+    model, evaluation, history = training(model, data, epochs, batch)
     log()
-
-    new_model = load_model(checkpoint_file)
-    assert_allclose(model.predict(data[0]), new_model.predict(data[0]), 1e-5)
-
-    checkpoint = ModelCheckpoint(checkpoint_file, monitor='loss', verbose=1, save_best_only=True, mode='min')
-    callbacks_list = [checkpoint]
-    new_model.fit(data[0], data[1], epochs=5, batch_size=500, callbacks=callbacks_list)

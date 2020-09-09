@@ -1,10 +1,6 @@
 import os
 import numpy as np
-import tests.Dense.model_predict as model_predict
-import random
-import matplotlib.pyplot as plt
-from keras.models import load_model
-
+import tests.old.Dense.model_predict as model_predict
 
 
 def compare(_orig, _comp):
@@ -46,7 +42,7 @@ def show_loss_history():
 
 
 if __name__ == '__main__':
-    path = '/home/jedle/Projects/Sign-Language/tests/Dense/tests_flat'
+    path = '/tests/old/Dense/tests_flat'
     data_file = '/home/jedle/data/Sign-Language/_source_clean/testing/prepared_data_glo_30-30.npz'
 
     # get_all_testfiles(path)

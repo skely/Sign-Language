@@ -1,10 +1,11 @@
 import os
+import h5py
 import pickle
 import datetime
 import numpy as np
 import matplotlib.pyplot as plt
 # import tests.Dense_2.data_prep as data_prep
-import data_prep
+# import data_prep
 from keras.layers import Dense, Input, Conv1D, Flatten, MaxPooling1D, concatenate
 from keras.models import Model, Sequential
 from keras.utils import plot_model
@@ -14,26 +15,22 @@ from keras.optimizers import sgd
 def define_model():
     _loss = 'mean_squared_error'
     _optimizer = 'sgd'
-    _optimizer = sgd(lr, momentum, decay=decay)
+    _optimizer = sgd(lr=lr, momentum=momentum, decay=decay)
     _activation = 'sigmoid'
 
-    # _model = Sequential()
-    # _model.add(Conv1D(filters=64, kernel_size=3, activation=_activation, input_shape=(97, 1)))
-    # _model.add(Conv1D(filters=64, kernel_size=3, activation=_activation))
-    # _model.add(Flatten())
-    # _model.add(Dense(97, activation=_activation))
-
     input = Input(shape=(97, 1))
-    layer1 = Conv1D(filters=64, kernel_size=3, activation=_activation, padding='same')(input)
+    layer1 = Conv1D(filters=8, kernel_size=3, activation=_activation, padding='same')(input)
     concat1 = concatenate([input, layer1])
-    layer2 = Conv1D(filters=64, kernel_size=5, activation=_activation, padding='same')(concat1)
+    layer2 = Conv1D(filters=16, kernel_size=3, activation=_activation, padding='same')(concat1)
     concat2 = concatenate([concat1, layer2])
-    layer3 = Conv1D(filters=64, kernel_size=7, activation=_activation, padding='same')(concat1)
+    layer3 = Conv1D(filters=32, kernel_size=3, activation=_activation, padding='same')(concat2)
     concat3 = concatenate([concat2, layer3])
-    layer4 = Flatten()(concat3)
-    layer5 = Dense(97, activation=_activation)(layer4)
+    layer4 = Conv1D(filters=64, kernel_size=3, activation=_activation, padding='same')(concat3)
+    concat4 = concatenate([concat3, layer4])
+    layer5 = Flatten()(concat4)
+    layer6 = Dense(97, activation=_activation)(layer5)
 
-    _model = Model(inputs=input, outputs=layer5, name=_model_name)
+    _model = Model(inputs=input, outputs=layer6, name=_model_name)
     _model.compile(loss=_loss, optimizer=_optimizer, metrics=['mean_squared_error'])
     _model.summary()
 
@@ -48,7 +45,7 @@ def training(_model, _data, _epochs, _batch_size):
 
 
 def log():
-    plot_model(model, to_file=os.path.join(path, test_name), show_shapes=True)     # saves figure of model
+    # plot_model(model, to_file=os.path.join(path, test_name), show_shapes=True)     # saves figure of model
     model.save(os.path.join(path, 'model_{}.h5'.format(test_name)))                # saves model hdf5
     with open(os.path.join(path, 'history_{}.pkl'.format(test_name)), 'wb') as f:  # saves training history
         pickle.dump(history.history, f, pickle.HIGHEST_PROTOCOL)
@@ -64,31 +61,38 @@ def log():
     lines_list.append('loss: {}\n'.format(evaluation[0]))
     lines_list.append('mse: {}\n'.format(evaluation[1]))
     lines_list.append('learning_rate: {}\n'.format(lr))
-    lines_list.append('decay: {}\n'.format(decay))
+    # lines_list.append('decay: {}\n'.format(decay))
 
-    with open(os.path.join(path, 'all_logs_oneax.txt'.format(test_name)), 'a+') as f:
+    with open(os.path.join(path, 'all_logs.txt'.format(test_name)), 'a') as f:
         f.writelines(lines_list)
 
 
 if __name__ == '__main__':
-    path = '/home/jedle/Projects/Sign-Language/tests/Conv1D/tests'
-    data_file = '/home/jedle/data/Sign-Language/_source_clean/testing/prepared_data_glo_30-30.npz'
+    path = '/tests/old/Conv3D/tests'
+    # path = '/storage/plzen1/home/jedlicka/Sign-Language/tests/'
+    data_file = 'simple_aug10.h5'
+
     time_stamp = datetime.datetime.now()
     time_string = '{:02d}-{:02d}-{:02d}-{:02d}-{:02d}'.format(time_stamp.year%100, time_stamp.month, time_stamp.day, time_stamp.hour, time_stamp.minute)
     # print(time_string)
-    _model_name = 'Conv1D_skips'
+    _model_name = 'Conv3D_skips'
+    prep_data = False
+    epochs = 3000
+    batch = 500
+    lr = 1e-1
+    momentum = 0
+    decay = lr / epochs
+    test_name = 'simple_' + time_string
 
-    epochs = 5000
-    batch = 1000
 
-    lr = 1e-2
-    momentum = 0.9
-    decay = 1e-2 / epochs
+    f = h5py.File(os.path.join(path, data_file), 'r')
+    train_X = np.array(f['train_X'])
+    train_Y = np.array(f['train_Y'])
+    test_X = np.array(f['test_X'])
+    test_Y = np.array(f['test_Y'])
 
-    test_name = 'conv_skip_' + time_string
-    data = data_prep.main(data_file)
-    print(np.shape(data[0]))
-    print(np.shape(data[1]))
+    data = np.expand_dims(train_X, 2), train_Y, np.expand_dims(test_X,2), test_Y
+
     model = define_model()
     model, evaluation, history = training(model, data, epochs, batch)
     log()

@@ -1,12 +1,10 @@
 import os
 import pickle
 import datetime
-import h5py
 import numpy as np
-import result_analysis
 import matplotlib.pyplot as plt
 # import tests.Dense_2.data_prep as data_prep
-# import data_prep
+import data_prep
 from keras.layers import Dense, Input, Conv1D, Flatten, MaxPooling1D, concatenate
 from keras.models import Model, Sequential, load_model
 from keras.utils import plot_model
@@ -16,7 +14,7 @@ from keras.optimizers import sgd
 def define_model():
     _loss = 'mean_squared_error'
     _optimizer = 'sgd'
-    _optimizer = sgd(lr, momentum)
+    _optimizer = sgd(lr, momentum, decay=decay)
     _activation = 'sigmoid'
 
     # _model = Sequential()
@@ -25,7 +23,7 @@ def define_model():
     # _model.add(Flatten())
     # _model.add(Dense(97, activation=_activation))
 
-    input = Input(shape=(97, 1))
+    input = Input(shape=(97, 3))
     layer1 = Conv1D(filters=8, kernel_size=3, activation=_activation, padding='same')(input)
     concat1 = concatenate([input, layer1])
     layer2 = Conv1D(filters=16, kernel_size=3, activation=_activation, padding='same')(concat1)
@@ -35,7 +33,7 @@ def define_model():
     layer4 = Conv1D(filters=64, kernel_size=3, activation=_activation, padding='same')(concat3)
     concat4 = concatenate([concat3, layer4])
     layer5 = Flatten()(concat4)
-    layer6 = Dense(97, activation=_activation)(layer5)
+    layer6 = Dense(97*3, activation=_activation)(layer5)
 
     _model = Model(inputs=input, outputs=layer6, name=_model_name)
     _model.compile(loss=_loss, optimizer=_optimizer, metrics=['mean_squared_error'])
@@ -68,40 +66,41 @@ def log():
     lines_list.append('loss: {}\n'.format(evaluation[0]))
     lines_list.append('mse: {}\n'.format(evaluation[1]))
     lines_list.append('learning_rate: {}\n'.format(lr))
-    # lines_list.append('decay: {}\n'.format(decay))
+    lines_list.append('decay: {}\n'.format(decay))
 
     with open(os.path.join(path, 'all_logs.txt'.format(test_name)), 'a') as f:
         f.writelines(lines_list)
 
 
 if __name__ == '__main__':
-    path = '/home/jedle/Projects/Sign-Language/tests/Conv3D/tests'
-    # path = '/storage/plzen1/home/jedlicka/Sign-Language/tests/Conv3D/tests'
-    data_file = 'simple_aug10.h5'
-    model_file_name = 'model_simple_20-09-01-10-55.h5'
-
+    path = '/tests/old/Conv1D/tests'
+    # path = '/storage/plzen1/home/jedlicka/Sign-Language/tests/'
+    data_file = '/home/jedle/data/Sign-Language/_source_clean/testing/prepared_data_glo_30-30.npz'
+    # data_file = '/storage/plzen1/home/jedlicka/Sign-Language/data/prepared_data_30-30_aug10times2.npz'
     time_stamp = datetime.datetime.now()
     time_string = '{:02d}-{:02d}-{:02d}-{:02d}-{:02d}'.format(time_stamp.year%100, time_stamp.month, time_stamp.day, time_stamp.hour, time_stamp.minute)
     # print(time_string)
     _model_name = 'Conv3D_skips'
+
     prep_data = False
-    epochs = 3
+    epochs = 2000
     batch = 500
-    lr = 1e-2
-    momentum = 0
-    # decay = lr / epochs
-    test_name = 'cont_gen1_' + time_string
 
-    f = h5py.File(os.path.join(path, data_file), 'r')
-    train_X = np.array(f['train_X'])
-    train_Y = np.array(f['train_Y'])
-    test_X = np.array(f['test_X'])
-    test_Y = np.array(f['test_Y'])
+    lr = 1e-1
+    momentum = 0.8
+    decay = lr / epochs
 
-    data = np.expand_dims(train_X, 2), train_Y, np.expand_dims(test_X,2), test_Y
+    test_name = 'meta_cont_' + time_string
+
+    if prep_data:
+        data = data_prep.main_3d(data_file)
+        data_prep.save_HDF5(data, os.path.join(path, 'prepared_data_ang_aug10.h5'))
+    else:
+        data = data_prep.load_HDF5(os.path.join(path, 'prepared_data_ang_aug10.h5'))
 
     # model = define_model()
-    # model_file_name = result_analysis.get_best_model(path)
+    model_file_name = 'model_3Daugmented10_20-08-03-11-20.h5'
     model = load_model(os.path.join(path, model_file_name))
+
     model, evaluation, history = training(model, data, epochs, batch)
     log()

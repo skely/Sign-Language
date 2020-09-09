@@ -196,7 +196,7 @@ def make_log():
 
 
 if __name__ == '__main__':
-    path = '/home/jedle/Projects/Sign-Language/tests/Dense/tests'
+    path = '/tests/old/Dense/tests'
     data_file = '/home/jedle/data/Sign-Language/_source_clean/testing/prepared_data_glo_30-30.npz'
 
     data = prepare_data_file(data_file)

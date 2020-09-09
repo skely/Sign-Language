@@ -66,15 +66,14 @@ def get_all_testfiles(_path):
     return test_file_list
 
 
-def plot_compare(data, labels, title='', last=True):
+def plot_compare(data, labels, title=''):
     plt.figure()
     if title is not '':
         plt.title(title)
     for d, l in zip(data, labels):
         plt.plot(d, label=l)
     plt.legend()
-    if last:
-        plt.show()
+    # plt.show()
 
 
 def training_loss_graph(_result):
@@ -97,56 +96,54 @@ def training_loss_graph(_result):
     plt.legend()
 
 
-def get_best_model(_path):
-    test_file_list = get_all_testfiles(_path)
-    all_results = read_all_test_files(test_file_list, _verbose=1)
-
-    selected_results = [l for l in all_results if l['epochs'] == '3000'][0]
-    return selected_results['model file name']
 
 
 if __name__ == '__main__':
-    path = '/home/jedle/Projects/Sign-Language/tests/Conv3D/tests'
+    path = '/tests/old/Conv1D/tests'
     # data_file = '/home/jedle/data/Sign-Language/_source_clean/prepared_data_30-30_aug10times2.npz'
-    data_h5_file = '/home/jedle/Projects/Sign-Language/tests/Conv3D/tests/simple_aug10.h5'
+    data_h5_file = '/tests/old/Conv1D/tests/prepared_data_ang_aug10.h5'
+
     epsilon = 10e-8
 
     # select model
     test_file_list = get_all_testfiles(path)
-    all_results = read_all_test_files(test_file_list, _verbose=1)
-
-    selected_results = [l for l in all_results if l['epochs'] == '3000']
-
-    plt.figure()
-    for tmp_item in selected_results:
-        print(tmp_item)
-        tmp_history_file = os.path.join(path, tmp_item['training history'])
-        tmp_history = np.load(tmp_history_file, allow_pickle=True)
-        plt.plot(tmp_history['loss'][1:], label=tmp_item['learning_rate'])
-    plt.legend()
-
-    selected_model_name = all_results[0]['model file name']
-    selected_model_history = all_results[0]['training history']
+    results = read_all_test_files(test_file_list, _verbose=1)
+    for line in results:
+        print(line)
+    selected_model_name = results[0]['model file name']
+    selected_model_history = results[0]['training history']
     model = load_model(os.path.join(path, selected_model_name))
     history = np.load(os.path.join(path, selected_model_history), allow_pickle=True)
+    print(history.keys())
+    plt.figure()
+    plt.title('Loss progress')
+    plt.plot(history['loss'][10:])
+    plt.show()
 
-    doit = True
+    loss_diff = np.diff(history['loss'])
+    for i in range(len(loss_diff)):
+        print(loss_diff[i])
+
+    doit = False
     if doit:
         # select data
-        limit_prediction = 10
-        selection = 5
-        data = data_prep.load_HDF5(os.path.join(path, 'simple_aug10.h5'))
+        data = data_prep.load_HDF5(os.path.join(path, 'prepared_data_ang_aug10.h5'))
         train_X, train_Y, test_X, test_Y = data
+        predicted = model.predict(test_X[0:10])
 
-        predicted = model.predict(np.expand_dims(test_X[0:limit_prediction], 2))
-        dist_ground = dp.sign_comparison(test_X[selection, :], test_Y[selection, :])
-        plot_compare([test_X[0, :], test_Y[0, :]], ['test_X', 'test_Y'], title='source data', last=False)
+        # evaluate
+        test_Y = data_prep.conv_1d23d(test_Y)
+        for i in range(np.size(test_X), 0):
+            pass
+        dist_ground = dp.sign_comparison(test_X[0, :, 0:1], test_Y[0, :, 0:1])
+        plot_compare([test_X[0, :, 0], test_Y[0, :, 0]], ['test_X', 'test_Y'], title='source data')
 
-        dist_predicted = dp.sign_comparison(test_X[selection, :], predicted[selection, :])
-        plot_compare([test_X[selection, :], predicted[selection, :]], ['test_X', 'prediction'], title='prediction data')
+        predicted = data_prep.conv_1d23d(predicted)
+        dist_predicted = dp.sign_comparison(test_X[0, :, 0:1], predicted[0, :, 0:1])
+        plot_compare([test_X[0, :, 0], predicted[0, :, 0]], ['test_X', 'prediction'], title='prediction data')
 
-        # print('error ground: {:.8f}'.format(dist_ground))
-        # print('error predicted: {:.8f}'.format(dist_predicted))
-        # print('error ratio: {:.4f}'.format(dist_predicted/dist_ground))
+        print('error ground: {:.8f}'.format(dist_ground))
+        print('error predicted: {:.8f}'.format(dist_predicted))
+        print('error ratio: {:.4f}'.format(dist_predicted/dist_ground))
         plt.show()
 

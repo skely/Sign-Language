@@ -143,9 +143,9 @@ def run_model_predict(_path, _data_file, _model_file, _batch, _channel, train_da
     return res
 
 if __name__ == '__main__':
-    path = '/home/jedle/Projects/Sign-Language/tests/Dense/tests'
+    path = '/tests/old/Dense/tests'
     data_file = '/home/jedle/data/Sign-Language/_source_clean/testing/prepared_data_glo_30-30.npz'
-    model_file = '/home/jedle/Projects/Sign-Language/tests/Dense/tests/model_dense_3layer_sgd_lr01_skips_bias_run_9.h5'
+    model_file = '/tests/old/Dense/tests/model_dense_3layer_sgd_lr01_skips_bias_run_9.h5'
 
     batch = 0
     channel = 0

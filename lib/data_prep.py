@@ -161,9 +161,13 @@ def sign_comparison(_sign_1, _sign_2, _method='dtw_normalized'):
     :return: distance
     """
     _normalized = None
+    if len(np.shape(_sign_1)) == 1:
+        det = 1
+    else:
+        det = np.size(_sign_1, 1)
     if _method == 'dtw_normalized':
         _distance, _path = fastdtw.dtw(_sign_1, _sign_2)
-        _normalized = (_distance/len(_path))/np.size(_sign_1, 1)
+        _normalized = (_distance/len(_path))/det
     return _normalized
 
 
@@ -177,12 +181,17 @@ def augmentation_noise(_data, _rate=10, _noise_level=0.01):
     """
     batch, time, channels = np.shape(_data)
     new_array = np.zeros((batch * _rate, time, channels))
-
+    _verbose = True
+    if _verbose:
+        print('Augmentation:')
     for b in range(batch):
         for ch in range(channels):
             tmp_diff = np.max(np.diff(_data[b, :, ch])) - np.min(np.diff(_data[b, :, ch]))
             for i in range(_rate):
                 white_noise = np.random.normal(0, tmp_diff * _noise_level, size=time)
                 new_array[_rate * b + i, :, ch] = _data[b, :, ch] + white_noise
-
+        if _verbose:
+            sys.stdout.write('\rprocessing... {:.2f}% done.'.format(100*(b+1)/batch))
+    if _verbose:
+        sys.stdout.write('\rdone.\n'.format(100 * (b + 1) / batch))
     return new_array

@@ -1,10 +1,8 @@
 import os
 import pickle
-import h5py
 import numpy as np
 import matplotlib.pyplot as plt
 # import tests.Dense_2.data_prep as data_prep
-from lib import data_prep as dp
 import data_prep
 from keras.layers import Dense, Input
 from keras.models import Model, load_model
@@ -17,13 +15,11 @@ def log_read(file):
         content = f.readlines()
     return content
 
-def read_all_test_files(_test_file_list, _verbose=0, _evaluate=True):
+def read_all_test_files(_test_file_list, _verbose=0):
     _results = []
     for tst_file in _test_file_list:
         _new_res = read_test_file(tst_file)
         _results += _new_res
-    if _evaluate:
-        _results = evaluate_results(_results)
     return _results
 
 
@@ -66,10 +62,8 @@ def get_all_testfiles(_path):
     return test_file_list
 
 
-def plot_compare(data, labels, title=''):
+def plot_compare(data, labels):
     plt.figure()
-    if title is not '':
-        plt.title(title)
     for d, l in zip(data, labels):
         plt.plot(d, label=l)
     plt.legend()
@@ -99,51 +93,28 @@ def training_loss_graph(_result):
 
 
 if __name__ == '__main__':
-    path = '/home/jedle/Projects/Sign-Language/tests/Conv1D/tests'
-    # data_file = '/home/jedle/data/Sign-Language/_source_clean/prepared_data_30-30_aug10times2.npz'
-    data_h5_file = '/home/jedle/Projects/Sign-Language/tests/Conv1D/tests/prepared_data_ang_aug10.h5'
+    path = '/tests/old/Conv1D/tests'
+    data_file = '/home/jedle/data/Sign-Language/_source_clean/testing/prepared_data_glo_30-30.npz'
 
     epsilon = 10e-8
 
-    # select model
     test_file_list = get_all_testfiles(path)
     results = read_all_test_files(test_file_list, _verbose=1)
-    for line in results:
-        print(line)
-    selected_model_name = results[0]['model file name']
-    selected_model_history = results[0]['training history']
-    model = load_model(os.path.join(path, selected_model_name))
-    history = np.load(os.path.join(path, selected_model_history), allow_pickle=True)
-    print(history.keys())
-    plt.figure()
-    plt.title('Loss progress')
-    plt.plot(history['loss'][10:])
+    data = data_prep.main(data_file)
+
+    ordered = evaluate_results(results)
+    for o in ordered:
+        print('{} - mse: {}'.format(o['model file name'], o['mse']))
+
+    picked_result = ordered[0]
+
+    training_loss_graph(picked_result)
+
+    model = load_model(os.path.join(path, picked_result['model file name']))
+    # model.summary()
+    predicted = model.predict(data[0][0:10, :])
+
+    # plot_compare([data[0][0, :], data[1][0, :]], ['interpolated', 'ground truth'])
+    # plot_compare([data[0][0, :], predicted[0, :]], ['interpolated', 'predicted'])
+    plot_compare([data[0][0, :], data[1][0, :], predicted[0, :]], ['interpolated', 'ground truth', 'predicted'])
     plt.show()
-
-    loss_diff = np.diff(history['loss'])
-    for i in range(len(loss_diff)):
-        print(loss_diff[i])
-
-    doit = False
-    if doit:
-        # select data
-        data = data_prep.load_HDF5(os.path.join(path, 'prepared_data_ang_aug10.h5'))
-        train_X, train_Y, test_X, test_Y = data
-        predicted = model.predict(test_X[0:10])
-
-        # evaluate
-        test_Y = data_prep.conv_1d23d(test_Y)
-        for i in range(np.size(test_X), 0):
-            pass
-        dist_ground = dp.sign_comparison(test_X[0, :, 0:1], test_Y[0, :, 0:1])
-        plot_compare([test_X[0, :, 0], test_Y[0, :, 0]], ['test_X', 'test_Y'], title='source data')
-
-        predicted = data_prep.conv_1d23d(predicted)
-        dist_predicted = dp.sign_comparison(test_X[0, :, 0:1], predicted[0, :, 0:1])
-        plot_compare([test_X[0, :, 0], predicted[0, :, 0]], ['test_X', 'prediction'], title='prediction data')
-
-        print('error ground: {:.8f}'.format(dist_ground))
-        print('error predicted: {:.8f}'.format(dist_predicted))
-        print('error ratio: {:.4f}'.format(dist_predicted/dist_ground))
-        plt.show()
-
