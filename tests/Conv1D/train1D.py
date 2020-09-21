@@ -69,8 +69,8 @@ def log():
 
 
 if __name__ == '__main__':
-    path = '/tests/old/Conv3D/tests'
-    # path = '/storage/plzen1/home/jedlicka/Sign-Language/tests/'
+    # path = '/home/jedle/Projects/Sign-Language/tests/Conv1D/tests'
+    path = '/storage/plzen1/home/jedlicka/Sign-Language/tests/Conv1D/tests'
     data_file = 'simple_aug10.h5'
 
     time_stamp = datetime.datetime.now()
