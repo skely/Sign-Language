@@ -3,7 +3,7 @@ from lib import BVH, SL_dict
 import sys
 import numpy as np
 import fastdtw
-
+import h5py
 
 def mine_sign_trajectories(_bvh_src_path, _dict_take_file, _surroundings, _sign_id='', _sign_name='tra.', _channels=[], _verbose=True):
     """
@@ -195,3 +195,12 @@ def augmentation_noise(_data, _rate=10, _noise_level=0.01):
     if _verbose:
         sys.stdout.write('\rdone.\n'.format(100 * (b + 1) / batch))
     return new_array
+
+def load_HDF5(_file_name):
+    with h5py.File(_file_name, 'r') as f:
+        train_X = np.array(f['train_X'])
+        train_Y = np.array(f['train_Y'])
+        test_X = np.array(f['test_X'])
+        test_Y = np.array(f['test_Y'])
+    data = train_X, train_Y, test_X, test_Y
+    return data

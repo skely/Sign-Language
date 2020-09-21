@@ -109,10 +109,11 @@ def plot_example(all_results, selection=0):
     data = data_prep.load_HDF5(os.path.join(path, data_file))
     train_X, train_Y, test_X, test_Y = data
     predicted = model.predict(test_X[0:limit_prediction])
+    if len(np.shape(test_Y)) == 2:  # reshape 3D vystupu
+        test_Y = np.reshape(test_Y, (-1, 97, 3), 'F')
+        predicted = np.reshape(predicted, (-1, 97, 3), 'F')
 
-    # dist_ground = dp.sign_comparison(test_X[selection, :], test_Y[selection, :])
     plot_compare([test_X[selection, :], test_Y[selection, :]], ['test_X', 'test_Y'], title='source data', last=False)
-    # dist_predicted = dp.sign_comparison(test_X[selection, :], predicted[selection, :])
     plot_compare([test_X[selection, :], predicted[selection, :]], ['test_X', 'prediction'], title='prediction data')
 
 
@@ -128,7 +129,7 @@ def plot_all_histories(_selected_results, left_cut=1):
 
 
 if __name__ == '__main__':
-    path = '/home/jedle/Projects/Sign-Language/tests/old/Conv3D/tests'
+    path = '/home/jedle/Projects/Sign-Language/tests/Conv1D/tests'
     # data_file = '/home/jedle/data/Sign-Language/_source_clean/prepared_data_30-30_aug10times2.npz'
     # data_h5_file = '/home/jedle/Projects/Sign-Language/tests/old/Conv3D/tests/simple_aug10.h5'
     data_file = '/home/jedle/Projects/Sign-Language/tests/old/Conv3D/tests/3D_aug10.h5'
@@ -136,25 +137,25 @@ if __name__ == '__main__':
 
     data = data_prep.load_HDF5(os.path.join(path, data_file))
     train_X, train_Y, test_X, test_Y = data
-    print(np.shape(test_X))
-    print(np.shape(test_Y))
+    # print(np.shape(test_X))
+    # print(np.shape(test_Y))
 
     selection = 10
     test_Y = np.reshape(test_Y, (-1, 97, 3), 'F')
-    print(np.shape(test_Y))
+    # print(np.shape(test_Y))
 
-    plot_compare([test_X[selection, :], test_Y[selection, :]], ['test_X', 'test_Y'], title='source data', last=False)
-    plt.show()
-    #
-    # # *** load logs
-    # test_file_list = get_all_testfiles(path)
-    # all_results = read_all_test_files(test_file_list, _verbose=1)
-    # # *** grand filter logs
-    # selected_results = all_results
-    # # selected_results = [l for l in all_results if '3000' in l['epochs'] or '6000' in l['epochs']]
-    #
-    # # *** plot custom loss histories
-    # best_representatives = []
+    # plot_compare([test_X[selection, :], test_Y[selection, :]], ['test_X', 'test_Y'], title='source data', last=False)
+    # plt.show()
+
+    # *** load logs
+    test_file_list = get_all_testfiles(path)
+    all_results = read_all_test_files(test_file_list, _verbose=1)
+    # *** grand filter logs
+    selected_results = all_results
+    # selected_results = [l for l in all_results if '3000' in l['epochs'] or '6000' in l['epochs']]
+
+    # *** plot custom loss histories
+    best_representatives = selected_results
     # best_representatives.append([l for l in selected_results if 'simple' in l['test name'] and '0.1' in l['learning_rate']][0])
     # best_representatives.append([l for l in selected_results if 'simple' in l['test name'] and '0.01' in l['learning_rate']][0])
     # best_representatives.append([l for l in selected_results if 'simple' in l['test name'] and '0.001' in l['learning_rate']][0])
@@ -165,29 +166,27 @@ if __name__ == '__main__':
     # best_representatives.append([l for l in selected_results if 'gen1' in l['test name'] and '0.1' in l['learning_rate']][0])
     # best_representatives.append([l for l in selected_results if 'gen1' in l['test name'] and '0.01' in l['learning_rate']][0])
     # best_representatives.append([l for l in selected_results if 'gen1' in l['test name'] and '0.001' in l['learning_rate']][0])
-    #
-    # for b in best_representatives:
-    #     print(b)
-    #
-    # plt.figure()
-    # for tmp_item in best_representatives:
-    #     # print(tmp_item)
-    #     tmp_history_file = os.path.join(path, tmp_item['training history'])
-    #     tmp_history = np.load(tmp_history_file, allow_pickle=True)
-    #     if 'simple' in tmp_item['test name']:
-    #         plt.plot(np.arange(3000)[1:], tmp_history['loss'][1:], label=tmp_item['test name'].split('_')[0] + ' ' + tmp_item['learning_rate'])
-    #     elif '3D' in tmp_item['test name']:
-    #         plt.plot(np.arange(3000)[1:], tmp_history['loss'][1:], label=tmp_item['test name'].split('_')[0] + ' ' + tmp_item['learning_rate'])
-    #     elif 'gen1' in tmp_item['test name']:
-    #         plt.plot(3000+np.arange(3000), tmp_history['loss'], label=tmp_item['test name'].split('_')[0] + ' ' + tmp_item['learning_rate'])
-    #     elif 'decay' in tmp_item['test name'] and '6000' in tmp_item['epochs']:
-    #         plt.plot(np.arange(6000)[1:], tmp_history['loss'][1:], label=tmp_item['test name'].split('_')[0] + ' ' + tmp_item['learning_rate'])
-    #
-    # plt.legend()
-    # plt.show()
-    #
-    # # *** plot example
-    # plot_example(all_results)
+
+
+    plt.figure()
+    for tmp_item in best_representatives:
+        print(tmp_item)
+        tmp_history_file = os.path.join(path, tmp_item['training history'])
+        tmp_history = np.load(tmp_history_file, allow_pickle=True)
+        if '3000' in tmp_item['epochs']:
+            plt.plot(np.arange(3000)[1:], tmp_history['loss'][1:], label=tmp_item['test name'].split('_')[1] + ' ' + tmp_item['learning_rate'])
+        elif '6000' in tmp_item['epochs']:
+            plt.plot(np.arange(6000)[1:], tmp_history['loss'][1:], label=tmp_item['test name'].split('_')[1] + ' ' + tmp_item['learning_rate'])
+        # elif 'gen1' in tmp_item['test name']:
+        #     plt.plot(3000+np.arange(3000), tmp_history['loss'], label=tmp_item['test name'].split('_')[0] + ' ' + tmp_item['learning_rate'])
+        # elif 'decay' in tmp_item['test name'] and '6000' in tmp_item['epochs']:
+        #     plt.plot(np.arange(6000)[1:], tmp_history['loss'][1:], label=tmp_item['test name'].split('_')[0] + ' ' + tmp_item['learning_rate'])
+
+    plt.legend()
+    plt.show()
+
+    # *** plot example
+    plot_example(all_results, selection=0)
     #
     #
     #

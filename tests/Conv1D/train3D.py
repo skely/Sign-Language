@@ -77,12 +77,13 @@ if __name__ == '__main__':
     # print(time_string)
     # _model_name = ''
     prep_data = False
-    epochs = 3
+    epochs = 3000
     batch = 500
     lr = 1e-1
     momentum = 0
     decay = lr / epochs
     test_name = 'oldcode_train3D_' + time_string
+
 
     f = h5py.File(os.path.join(path, data_file), 'r')
     train_X = np.array(f['train_X'])

@@ -141,7 +141,8 @@ if __name__ == '__main__':
     path = '/home/jedle/Projects/Sign-Language/tests/old/Conv3D/tests'
     # data_file = '/home/jedle/data/Sign-Language/_source_clean/prepared_data_30-30_aug10times2.npz'
     data_h5_file = '/tests/old/Conv3D/tests/simple_aug10.h5'
-    data3D_H5_file = '/tests/old/Conv3D/tests/3D_aug10.h5'
+    # data3D_H5_file = '/tests/old/Conv3D/tests/3D_aug10.h5'
+    data3D_H5_file = '3D_aug10.h5'
     epsilon = 10e-8
 
     # *** load logs
