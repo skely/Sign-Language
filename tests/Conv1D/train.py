@@ -5,7 +5,7 @@ import numpy as np
 import pickle
 import h5py
 import matplotlib.pyplot as plt
-from keras.layers import Dense, Input, Conv1D, Flatten, concatenate
+from keras.layers import Dense, Input, Conv1D, Flatten, concatenate, LSTM
 from keras.models import Model, load_model
 from keras.optimizers import sgd
 from contextlib import redirect_stdout
@@ -13,9 +13,9 @@ from contextlib import redirect_stdout
 
 def define_model():
     _loss = 'mean_squared_error'
-    _optimizer = 'sgd'
-    _optimizer = sgd(lr=lr, momentum=momentum, decay=decay)
-    # _optimizer = sgd(lr=lr, momentum=momentum)
+    # _optimizer = 'sgd'
+    # _optimizer = sgd(lr=lr, momentum=momentum, decay=decay)
+    _optimizer = sgd(lr=lr, momentum=momentum)
     _activation = 'sigmoid'
 
     input = Input(shape=(97, 3))
@@ -31,6 +31,50 @@ def define_model():
     layer6 = Dense(97*3, activation=_activation)(layer5)
 
     _model = Model(inputs=input, outputs=layer6, name=test_name)
+    _model.compile(loss=_loss, optimizer=_optimizer, metrics=['mean_squared_error'])
+    _model.summary()
+
+    return _model
+
+
+def define_model_short():
+    _loss = 'mean_squared_error'
+    # _optimizer = 'sgd'
+    # _optimizer = sgd(lr=lr, momentum=momentum, decay=decay)
+    _optimizer = sgd(lr=lr, momentum=momentum)
+    _activation = 'sigmoid'
+
+    input = Input(shape=(97, 3))
+    layer1 = Conv1D(filters=8, kernel_size=3, activation=_activation, padding='same')(input)
+    concat1 = concatenate([input, layer1])
+    layer2 = Conv1D(filters=16, kernel_size=5, activation=_activation, padding='same')(concat1)
+    concat2 = concatenate([concat1, layer2])
+    layer_flatten = Flatten()(concat2)
+    output = Dense(97*3, activation=_activation)(layer_flatten)
+
+    _model = Model(inputs=input, outputs=output, name=test_name)
+    _model.compile(loss=_loss, optimizer=_optimizer, metrics=['mean_squared_error'])
+    _model.summary()
+
+    return _model
+
+
+def define_model_lstm():
+    _loss = 'mean_squared_error'
+    # _optimizer = 'sgd'
+    # _optimizer = sgd(lr=lr, momentum=momentum, decay=decay)
+    _optimizer = sgd(lr=lr, momentum=momentum)
+    _activation = 'sigmoid'
+
+    input = Input(shape=(97, 3))
+    layer1 = LSTM(8, activation=_activation, return_sequences=True)(input)
+    # concat1 = concatenate([input, layer1])
+    layer2 = LSTM(16, activation=_activation, return_sequences=True)(layer1)
+    # concat2 = concatenate([concat1, layer2])
+    # layer_flatten = Flatten()(layer2)
+    # output = Dense(97*3, activation=_activation)(layer_flatten)
+
+    _model = Model(inputs=input, outputs=layer2, name=test_name)
     _model.compile(loss=_loss, optimizer=_optimizer, metrics=['mean_squared_error'])
     _model.summary()
 
@@ -59,7 +103,7 @@ def log():
     lines_list.append('test name: {}\n'.format(test_name))
     lines_list.append('model file name: model_{}.h5\n'.format(test_name))
     if 'loaded_model' in globals():
-        lines_list.append('loaded model file name (continuous training): {}}\n'.format(loaded_model))
+        lines_list.append('loaded model file name (continuous training): {}\n'.format(loaded_model))
     else:
         lines_list.append('loaded model file name (continuous training): None (zero generation)}\n')
     lines_list.append('training history: history_{}.pkl\n'.format(test_name))
@@ -71,7 +115,7 @@ def log():
     lines_list.append('mse: {}\n'.format(evaluation[1]))
     lines_list.append('learning_rate: {}\n'.format(lr))
     lines_list.append('momentum: {}\n'.format(momentum))
-    if decay in globals():
+    if 'decay' in globals():
         lines_list.append('decay: {}\n'.format(decay))
     lines_list.append('elapsed time: {}\n'.format(end_time_stamp - time_stamp))
 
@@ -79,21 +123,21 @@ def log():
         f.writelines(lines_list)
 
 if __name__ == '__main__':
-    # path = '/home/jedle/Projects/Sign-Language/tests/Conv1D/tests'
-    path = '/storage/plzen1/home/jedlicka/Sign-Language/tests/Conv1D/tests'
+    path = '/home/jedle/Projects/Sign-Language/tests/Conv1D/tests'
+    # path = '/storage/plzen1/home/jedlicka/Sign-Language/tests/Conv1D/tests'
     data_file = '3D_aug10.h5'
-    # loaded_model = 'model_3D_20-09-03-14-39.h5'
+    # loaded_model = 'model_conv2l_20-09-22-13-47.h5'
 
     time_stamp = datetime.datetime.now()
     time_string = '{:02d}-{:02d}-{:02d}-{:02d}-{:02d}'.format(time_stamp.year%100, time_stamp.month, time_stamp.day, time_stamp.hour, time_stamp.minute)
     # print(time_string)
-    test_name = 'workPC_test_' + time_string
+    test_name = 'lstm2l_' + time_string
 
-    epochs = 3000
+    epochs = 200
     batch = 500
     lr = 1e-1
     momentum = 0
-    decay = lr / epochs
+    # decay = lr / epochs
 
     f = h5py.File(os.path.join(path, data_file), 'r')
     train_X = np.array(f['train_X'])
@@ -106,10 +150,9 @@ if __name__ == '__main__':
     if 'loaded_model' in globals():
         model = load_model(os.path.join(path, loaded_model))
     else:
-        model = define_model()
+        model = define_model_lstm()
 
-
-    model, evaluation, history = training(model, data, epochs, batch)
-
-    end_time_stamp = datetime.datetime.now()
-    log()
+    # model, evaluation, history = training(model, data, epochs, batch)
+    #
+    # end_time_stamp = datetime.datetime.now()
+    # log()

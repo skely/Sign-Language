@@ -99,9 +99,9 @@ def training_loss_graph(_result):
 
 
 if __name__ == '__main__':
-    path = '/tests/old/Conv1D/tests'
+    path = '/home/jedle/Projects/Sign-Language/tests/old/Conv1D/tests'
     # data_file = '/home/jedle/data/Sign-Language/_source_clean/prepared_data_30-30_aug10times2.npz'
-    data_h5_file = '/tests/old/Conv1D/tests/prepared_data_ang_aug10.h5'
+    data_h5_file = '/home/jedle/Projects/Sign-Language/tests/old/Conv1D/tests/prepared_data_ang_aug10.h5'
 
     epsilon = 10e-8
 
@@ -124,7 +124,7 @@ if __name__ == '__main__':
     for i in range(len(loss_diff)):
         print(loss_diff[i])
 
-    doit = False
+    doit = True
     if doit:
         # select data
         data = data_prep.load_HDF5(os.path.join(path, 'prepared_data_ang_aug10.h5'))

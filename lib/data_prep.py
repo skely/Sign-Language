@@ -1,6 +1,7 @@
+import sys
+sys.path.append('/home/jedle/Projects/Sign-Language/')
 import os
 from lib import BVH, SL_dict
-import sys
 import numpy as np
 import fastdtw
 import h5py
