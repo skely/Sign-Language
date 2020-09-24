@@ -1,9 +1,10 @@
+import sys
+sys.path.append('/home/jedle/Projects/Sign-Language/')
 import os
 from lib import BVH, SL_dict
-import sys
 import numpy as np
 import fastdtw
-
+import h5py
 
 def mine_sign_trajectories(_bvh_src_path, _dict_take_file, _surroundings, _sign_id='', _sign_name='tra.', _channels=[], _verbose=True):
     """
@@ -161,7 +162,46 @@ def sign_comparison(_sign_1, _sign_2, _method='dtw_normalized'):
     :return: distance
     """
     _normalized = None
+    if len(np.shape(_sign_1)) == 1:
+        det = 1
+    else:
+        det = np.size(_sign_1, 1)
     if _method == 'dtw_normalized':
         _distance, _path = fastdtw.dtw(_sign_1, _sign_2)
-        _normalized = (_distance/len(_path))/np.size(_sign_1, 1)
+        _normalized = (_distance/len(_path))/det
     return _normalized
+
+
+def augmentation_noise(_data, _rate=10, _noise_level=0.01):
+    """
+    Add white noise to data. New data = data +- (max-min) * noise level
+    :param _data:
+    :param _rate:
+    :param _noise_level:
+    :return:
+    """
+    batch, time, channels = np.shape(_data)
+    new_array = np.zeros((batch * _rate, time, channels))
+    _verbose = True
+    if _verbose:
+        print('Augmentation:')
+    for b in range(batch):
+        for ch in range(channels):
+            tmp_diff = np.max(np.diff(_data[b, :, ch])) - np.min(np.diff(_data[b, :, ch]))
+            for i in range(_rate):
+                white_noise = np.random.normal(0, tmp_diff * _noise_level, size=time)
+                new_array[_rate * b + i, :, ch] = _data[b, :, ch] + white_noise
+        if _verbose:
+            sys.stdout.write('\rprocessing... {:.2f}% done.'.format(100*(b+1)/batch))
+    if _verbose:
+        sys.stdout.write('\rdone.\n'.format(100 * (b + 1) / batch))
+    return new_array
+
+def load_HDF5(_file_name):
+    with h5py.File(_file_name, 'r') as f:
+        train_X = np.array(f['train_X'])
+        train_Y = np.array(f['train_Y'])
+        test_X = np.array(f['test_X'])
+        test_Y = np.array(f['test_Y'])
+    data = train_X, train_Y, test_X, test_Y
+    return data
