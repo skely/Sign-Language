@@ -126,14 +126,14 @@ if __name__ == '__main__':
     path = '/home/jedle/Projects/Sign-Language/tests/Conv1D/tests'
     # path = '/storage/plzen1/home/jedlicka/Sign-Language/tests/Conv1D/tests'
     data_file = '3D_aug10.h5'
-    # loaded_model = 'model_conv2l_20-09-22-13-47.h5'
+    loaded_model = 'model_conv2l_20-09-22-13-47.h5'
 
     time_stamp = datetime.datetime.now()
     time_string = '{:02d}-{:02d}-{:02d}-{:02d}-{:02d}'.format(time_stamp.year%100, time_stamp.month, time_stamp.day, time_stamp.hour, time_stamp.minute)
     # print(time_string)
-    test_name = 'lstm2l_' + time_string
+    test_name = 'conv2l_gen1' + time_string
 
-    epochs = 200
+    epochs = 3000
     batch = 500
     lr = 1e-1
     momentum = 0
@@ -150,9 +150,9 @@ if __name__ == '__main__':
     if 'loaded_model' in globals():
         model = load_model(os.path.join(path, loaded_model))
     else:
-        model = define_model_lstm()
+        model = define_model_short()
 
-    # model, evaluation, history = training(model, data, epochs, batch)
-    #
-    # end_time_stamp = datetime.datetime.now()
-    # log()
+    model, evaluation, history = training(model, data, epochs, batch)
+
+    end_time_stamp = datetime.datetime.now()
+    log()
