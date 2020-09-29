@@ -1,4 +1,5 @@
 import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2' 
 import sys
 import numpy as np
 import matplotlib.pyplot as plt
@@ -148,7 +149,7 @@ if __name__ == '__main__':
     path = '/home/jedle/Projects/Sign-Language/tests/Conv1D/tests'
     # data_file = '/home/jedle/data/Sign-Language/_source_clean/prepared_data_30-30_aug10times2.npz'
     # data_h5_file = '/home/jedle/Projects/Sign-Language/tests/old/Conv3D/tests/simple_aug10.h5'
-    data_file = '/home/jedle/Projects/Sign-Language/tests/old/Conv3D/tests/3D_aug10.h5'
+    data_file = os.path.join(path, '3D_aug10.h5')
     epsilon = 10e-8
     selection = 10
 
@@ -174,22 +175,35 @@ if __name__ == '__main__':
 
     plt.figure()
     for tmp_item in best_representatives:
-        print(tmp_item)
+        print('{} : {} : {}'.format(tmp_item['test name'], tmp_item['learning_rate'], tmp_item['loss']))
         tmp_history_file = os.path.join(path, tmp_item['training history'])
         tmp_history = np.load(tmp_history_file, allow_pickle=True)
         tmp_epochs = int(tmp_item['epochs'])
         plt.axhline(y=epsilon)
-        if 'gen1' in tmp_item['test name']:
+        if 'gen0' in tmp_item['test name']:
+            gen_shift = 0
+            plt.plot(np.arange(tmp_epochs)[100:]+gen_shift, tmp_history['loss'][100:], label=tmp_item['test name'].split('_')[1] + ' ' + tmp_item['learning_rate'])
+        elif 'gen1' in tmp_item['test name']:
             gen_shift = 3000
             plt.plot(np.arange(tmp_epochs)+gen_shift, tmp_history['loss'], label=tmp_item['test name'].split('_')[1] + ' ' + tmp_item['learning_rate'])
         elif 'gen2' in tmp_item['test name']:
             gen_shift = 6000
             plt.plot(np.arange(tmp_epochs) + gen_shift, tmp_history['loss'], label=tmp_item['test name'].split('_')[1] + ' ' + tmp_item['learning_rate'])
+        elif 'gen3' in tmp_item['test name']:
+            gen_shift = 9000
+            plt.plot(np.arange(tmp_epochs) + gen_shift, tmp_history['loss'], label=tmp_item['test name'].split('_')[1] + ' ' + tmp_item['learning_rate'])
+        elif 'gen4' in tmp_item['test name']:
+            gen_shift = 12000
+            plt.plot(np.arange(tmp_epochs) + gen_shift, tmp_history['loss'], label=tmp_item['test name'].split('_')[1] + ' ' + tmp_item['learning_rate'])
+        elif 'gen5' in tmp_item['test name']:
+            gen_shift = 15000
+            plt.plot(np.arange(tmp_epochs) + gen_shift, tmp_history['loss'], label=tmp_item['test name'].split('_')[1] + ' ' + tmp_item['learning_rate'])
         else:
-            plt.plot(np.arange(tmp_epochs)[1:], tmp_history['loss'][1:], label=tmp_item['test name'].split('_')[1] + ' ' + tmp_item['learning_rate'])
+            pass
+            # plt.plot(np.arange(tmp_epochs)[1:], tmp_history['loss'][1:], label=tmp_item['test name'].split('_')[1] + ' ' + tmp_item['learning_rate'])
+        # plt.plot(np.arange(tmp_epochs) + gen_shift, tmp_history['loss'], label=tmp_item['test name'].split('_')[1] + ' ' + tmp_item['learning_rate'])
     plt.legend()
-    # plt.show()
 
     # *** plot example
-    plot_example(best_representatives, selection=0)
+    # plot_example(best_representatives, selection=0)
     plt.show()

@@ -79,9 +79,6 @@ def define_model_lstm():
     _model.compile(loss=_loss, optimizer=_optimizer, metrics=['mean_squared_error'])
     _model.summary()
 
-    return _model
-
-
 def training(_model, _data, _epochs, _batch_size):
     _history = _model.fit(_data[0], _data[1], validation_data=(_data[2], _data[3]), epochs=_epochs, batch_size=_batch_size, verbose=2)
     _evaluations = _model.evaluate(_data[2], _data[3])
@@ -139,7 +136,7 @@ if __name__ == '__main__':
 
     epochs = 3000
     batch = 500
-    lr = 1e-1
+    lr = 1e-2
     momentum = 0
     # decay = lr / epochs
 
