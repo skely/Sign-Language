@@ -39,6 +39,32 @@ def define_model():
     return _model
 
 
+def define_model_flat():
+    _loss = 'mean_squared_error'
+    # _optimizer = 'sgd'
+    # _optimizer = sgd(lr=lr, momentum=momentum, decay=decay)
+    _optimizer = sgd(lr=lr, momentum=momentum)
+    _activation = 'sigmoid'
+
+    input = Input(shape=(97, 3))
+    layer1 = Conv1D(filters=8, kernel_size=3, activation=_activation, padding='same')(input)
+    concat1 = concatenate([input, layer1])
+    layer2 = Conv1D(filters=8, kernel_size=3, activation=_activation, padding='same')(concat1)
+    concat2 = concatenate([concat1, layer2])
+    layer3 = Conv1D(filters=8, kernel_size=3, activation=_activation, padding='same')(concat2)
+    concat3 = concatenate([concat2, layer3])
+    layer4 = Conv1D(filters=8, kernel_size=3, activation=_activation, padding='same')(concat3)
+    concat4 = concatenate([concat3, layer4])
+    layer5 = Flatten()(concat4)
+    layer6 = Dense(97*3, activation=_activation)(layer5)
+
+    _model = Model(inputs=input, outputs=layer6, name=test_name)
+    _model.compile(loss=_loss, optimizer=_optimizer, metrics=['mean_squared_error'])
+    _model.summary()
+
+    return _model
+
+
 def define_model_short():
     _loss = 'mean_squared_error'
     # _optimizer = 'sgd'
@@ -127,19 +153,21 @@ def log():
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-l', '--learning_rate', help='learning rate (default lr=0.01)', required=True, type=float)
-    parser.add_argument('-m', '--loaded_model', help='model path (if continuous training)', type=str)
+    parser.add_argument('-m', '--loaded_model', help='model path (if continuous training) or model_type if creating new model (conv2l, conv4l, etc.)', type=str)
     args = parser.parse_args()
 
     # path = '/home/jedle/Projects/Sign-Language/nn_tests/data'
     path = '/storage/plzen1/home/jedlicka/Sign-Language/tests/Conv1D/tests'
     data_file = '3D_aug10.h5'
-    model_type = 'conv2l'
+    # model_type = 'conv2l'
     # loaded_model = 'model_conv2l_gen0_20-09-29-22-26.h5'
-    if args.loaded_model:
+    if 'model' in args.loaded_model:
         load_model = args.loaded_model
         loaded_generation = int(load_model.split('_')[2][3:])
         generation = 'gen{}'.format(loaded_generation+1)
+        model_type = load_model.split('_')[1]
     else:
+        model_type = args.loaded_model
         generation = 'gen0'
 
     time_stamp = datetime.datetime.now()
@@ -168,7 +196,7 @@ if __name__ == '__main__':
     elif model_type == 'lstm2l':
         model = define_model_lstm()
     elif model_type == 'conv4l':
-        model = define_model()
+        model = define_model_flat()
     else:
         print('Unrecognized model type')
 

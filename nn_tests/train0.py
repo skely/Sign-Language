@@ -12,7 +12,7 @@ from keras.optimizers import sgd
 from contextlib import redirect_stdout
 
 
-def define_model():
+def define_model_flat():
     _loss = 'mean_squared_error'
     # _optimizer = 'sgd'
     # _optimizer = sgd(lr=lr, momentum=momentum, decay=decay)
@@ -22,11 +22,11 @@ def define_model():
     input = Input(shape=(97, 3))
     layer1 = Conv1D(filters=8, kernel_size=3, activation=_activation, padding='same')(input)
     concat1 = concatenate([input, layer1])
-    layer2 = Conv1D(filters=16, kernel_size=3, activation=_activation, padding='same')(concat1)
+    layer2 = Conv1D(filters=8, kernel_size=3, activation=_activation, padding='same')(concat1)
     concat2 = concatenate([concat1, layer2])
-    layer3 = Conv1D(filters=32, kernel_size=3, activation=_activation, padding='same')(concat2)
+    layer3 = Conv1D(filters=8, kernel_size=3, activation=_activation, padding='same')(concat2)
     concat3 = concatenate([concat2, layer3])
-    layer4 = Conv1D(filters=64, kernel_size=3, activation=_activation, padding='same')(concat3)
+    layer4 = Conv1D(filters=8, kernel_size=3, activation=_activation, padding='same')(concat3)
     concat4 = concatenate([concat3, layer4])
     layer5 = Flatten()(concat4)
     layer6 = Dense(97*3, activation=_activation)(layer5)
@@ -127,13 +127,13 @@ if __name__ == '__main__':
     # path = '/home/jedle/Projects/Sign-Language/nn_tests/data'
     path = '/storage/plzen1/home/jedlicka/Sign-Language/tests/Conv1D/tests'
     data_file = '3D_aug10.h5'
-    loaded_model = 'model_conv2l_gen0_20-09-29-22-26.h5'
+    # loaded_model = 'model_conv2l_gen0_20-09-29-22-26.h5'
 
     time_stamp = datetime.datetime.now()
     time_string = '{:02d}-{:02d}-{:02d}-{:02d}-{:02d}'.format(time_stamp.year%100, time_stamp.month, time_stamp.day, time_stamp.hour, time_stamp.minute)
     # print(time_string)
-    model_type = 'conv2l'
-    generation = 'gen1'
+    model_type = 'conv4l'
+    generation = 'gen0'
     test_name = '{}_{}_{}'.format(model_type, generation, time_string)
 
     epochs = 3000
@@ -158,7 +158,7 @@ if __name__ == '__main__':
     elif model_type == 'lstm2l':
         model = define_model_lstm()
     elif model_type == 'conv4l':
-        model = define_model()
+        model = define_model_flat()
     else:
         print('Unrecognized model type')
 
