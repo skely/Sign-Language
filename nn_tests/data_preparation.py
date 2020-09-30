@@ -3,8 +3,8 @@ import numpy as np
 import h5py
 
 if __name__ == '__main__':
-    path = '/tests/old/Conv3D/tests'
-    out_path = '/tests/old/Conv3D/tests'
+    path = 'data'
+    out_path = 'data'
     data_h5_file = 'prepared_data_ang_30-30_aug20.npz'
     out_h5_file = '3D_aug20.h5'
 
@@ -32,9 +32,9 @@ if __name__ == '__main__':
     train_Y = data_Y[:split_point, :]
     test_Y = data_Y[split_point:, :]
 
-    hf = h5py.File(os.path.join(out_path, out_h5_file), 'w')
-    hf.create_dataset('train_X', data=train_X)
-    hf.create_dataset('train_Y', data=train_Y)
-    hf.create_dataset('test_X', data=test_X)
-    hf.create_dataset('test_Y', data=test_Y)
-    hf.close()
+    # hf = h5py.File(os.path.join(out_path, out_h5_file), 'w')
+    # hf.create_dataset('train_X', data=train_X)
+    # hf.create_dataset('train_Y', data=train_Y)
+    # hf.create_dataset('test_X', data=test_X)
+    # hf.create_dataset('test_Y', data=test_Y)
+    # hf.close()

@@ -124,22 +124,21 @@ def log():
         f.writelines(lines_list)
 
 if __name__ == '__main__':
-    # path = '/home/jedle/Projects/Sign-Language/tests/Conv1D/tests'
+    # path = '/home/jedle/Projects/Sign-Language/nn_tests/data'
     path = '/storage/plzen1/home/jedlicka/Sign-Language/tests/Conv1D/tests'
     data_file = '3D_aug10.h5'
-    # loaded_model = 'model_conv2l_gen0_20-09-29-09-21.h5'
-    loaded_model = 'model_conv2l_gen1_20-09-29-15-41.h5'
+    loaded_model = 'model_conv2l_gen0_20-09-29-22-26.h5'
 
     time_stamp = datetime.datetime.now()
     time_string = '{:02d}-{:02d}-{:02d}-{:02d}-{:02d}'.format(time_stamp.year%100, time_stamp.month, time_stamp.day, time_stamp.hour, time_stamp.minute)
     # print(time_string)
     model_type = 'conv2l'
-    generation = 'gen2'
+    generation = 'gen1'
     test_name = '{}_{}_{}'.format(model_type, generation, time_string)
 
     epochs = 3000
     batch = 500
-    lr = 1
+    lr = 2
     momentum = 0
     # decay = lr / epochs
 

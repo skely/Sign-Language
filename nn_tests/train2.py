@@ -124,7 +124,7 @@ def log():
         f.writelines(lines_list)
 
 if __name__ == '__main__':
-    # path = '/home/jedle/Projects/Sign-Language/tests/Conv1D/tests'
+    # path = '/home/jedle/Projects/Sign-Language/nn_tests/data'
     path = '/storage/plzen1/home/jedlicka/Sign-Language/tests/Conv1D/tests'
     data_file = '3D_aug10.h5'
     # loaded_model = 'model_conv2l_gen0_20-09-28-11-09.h5'
