@@ -147,13 +147,12 @@ def plot_all_histories(_selected_results, left_cut=1):
 
 if __name__ == '__main__':
     # path = '/home/jedle/Projects/Sign-Language/tests/Conv1D/tests'
-    # path = '/home/jedle/Projects/Sign-Language/nn_tests/data'
-    path = '/home/jedle/Projects/Sign-Language/nn_tests/data_old'
-    # path = '/home/jedle/Projects/Sign-Language/nn_tests/data_tst'
+    path = '/home/jedle/Projects/Sign-Language/nn_tests/data'
+    # path = '/home/jedle/Projects/Sign-Language/nn_tests/data_old'
     # data_file = '/home/jedle/data/Sign-Language/_source_clean/prepared_data_30-30_aug10times2.npz'
     # data_h5_file = '/home/jedle/Projects/Sign-Language/tests/old/Conv3D/tests/simple_aug10.h5'
-    # data_file = os.path.join(path, '3D_aug10.h5')
-    data_file = os.path.join('/home/jedle/Projects/Sign-Language/nn_tests/data', '3D_aug10.h5')
+    data_file = os.path.join(path, '3D_aug10.h5')
+    # data_file = os.path.join('/home/jedle/Projects/Sign-Language/nn_tests/data', '3D_aug10.h5')
     epsilon = 10e-8
     selection = 10
 
