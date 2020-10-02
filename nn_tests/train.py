@@ -11,6 +11,14 @@ from keras.layers import Dense, Input, Conv1D, Flatten, concatenate, LSTM
 from keras.models import Model, load_model
 from keras.optimizers import sgd
 from contextlib import redirect_stdout
+import random
+import string
+
+def get_random_alphanumeric_string(length):
+    letters_and_digits = string.ascii_letters + string.digits
+    result_str = ''.join((random.choice(letters_and_digits) for i in range(length)))
+    # print("Random alphanumeric String is:", result_str)
+    return result_str
 
 
 def define_model():
@@ -157,21 +165,22 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # path = '/home/jedle/Projects/Sign-Language/nn_tests/data'
-    path = '/storage/plzen1/home/jedlicka/Sign-Language/tests/Conv1D/tests'
+    path = '/storage/plzen1/home/jedlicka/Sign-Language/nn_tests/data'
     data_file = '3D_aug10.h5'
     # model_type = 'conv2l'
     # loaded_model = 'model_conv2l_gen0_20-09-29-22-26.h5'
     if 'model' in args.loaded_model:
-        load_model = args.loaded_model
-        loaded_generation = int(load_model.split('_')[2][3:])
+        loaded_model = args.loaded_model
+        loaded_generation = int(loaded_model.split('_')[2][3:])
         generation = 'gen{}'.format(loaded_generation+1)
-        model_type = load_model.split('_')[1]
+        model_type = loaded_model.split('_')[1]
     else:
         model_type = args.loaded_model
         generation = 'gen0'
 
     time_stamp = datetime.datetime.now()
-    time_string = '{:02d}-{:02d}-{:02d}-{:02d}-{:02d}'.format(time_stamp.year%100, time_stamp.month, time_stamp.day, time_stamp.hour, time_stamp.minute)
+    # time_string = '{:02d}-{:02d}-{:02d}-{:02d}-{:02d}'.format(time_stamp.year%100, time_stamp.month, time_stamp.day, time_stamp.hour, time_stamp.minute)
+    time_string = '{:02d}-{:02d}-{:02d}-{}'.format(time_stamp.year%100, time_stamp.month, time_stamp.day, get_random_alphanumeric_string(5))
     test_name = '{}_{}_{}'.format(model_type, generation, time_string)
 
     epochs = 3000
