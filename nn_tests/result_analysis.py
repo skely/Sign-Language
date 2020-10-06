@@ -119,15 +119,15 @@ def get_best_model(_path):
 def plot_example(all_results, selection=0):
     selected_model_name = all_results[0]['model file name']
     model = load_model(os.path.join(path, selected_model_name))
-    limit_prediction = 10
+    limit_prediction = selection+1
 
     data = data_prep.load_HDF5(os.path.join(path, data_file))
     train_X, train_Y, test_X, test_Y = data
     if 'simple' in selected_model_name:  # reshape 3D vystupu
-        predicted = model.predict(test_X[0:limit_prediction, :, 0:1])
+        predicted = model.predict(test_X[:limit_prediction, :, 0:1])
     else:
         test_Y = np.reshape(test_Y, (-1, 97, 3), 'F')
-        predicted = model.predict(test_X[0:limit_prediction])
+        predicted = model.predict(test_X[:limit_prediction])
         predicted = np.reshape(predicted, (-1, 97, 3), 'F')
 
     plot_compare([test_X[selection, :], test_Y[selection, :], predicted[selection, :]], ['polynomial interpolation', 'ground truth', 'nn prediction'], title='prediction data', version=1)
@@ -154,7 +154,7 @@ if __name__ == '__main__':
     data_file = os.path.join(path, '3D_aug10.h5')
     # data_file = os.path.join('/home/jedle/Projects/Sign-Language/nn_tests/data', '3D_aug10.h5')
     epsilon = 10e-8
-    selection = 10
+    selection = 50
 
     data = data_prep.load_HDF5(os.path.join(path, data_file))
     train_X, train_Y, test_X, test_Y = data
@@ -170,8 +170,8 @@ if __name__ == '__main__':
     selected_results = all_results
     # print(selected_results[0].keys())
 
-    # selected_results = [l for l in selected_results if 'None' in l['loaded model file name (continuous training)']]
-    # selected_results = [l for l in selected_results if int(l['epochs']) > 10]  # my testing nets have usually 3 epochs
+    selected_results = [l for l in selected_results if 'ihTi4' not in l['test name']]
+    selected_results = [l for l in selected_results if 'eusRT' not in l['test name']]
 
     # *** plot custom loss histories
     best_representatives = selected_results
@@ -183,15 +183,15 @@ if __name__ == '__main__':
     plt.title('loss comparison (baseline={})'.format(epsilon))
 
     for tmp_item in best_representatives:
-        print('{} : {} : {} : {}'.format(tmp_item['test name'], tmp_item['loaded model file name (continuous training)'], tmp_item['learning_rate'], tmp_item['loss']))
         tmp_history_file = os.path.join(path, tmp_item['training history'])
         tmp_history = np.load(tmp_history_file, allow_pickle=True)
-
+        print('{} : {} : {} : {}'.format(tmp_item['test name'], tmp_item['loaded model file name (continuous training)'], tmp_item['learning_rate'], tmp_item['loss']))
+        # print(tmp_history.keys())
         tmp_epochs = int(tmp_item['epochs'])
-        label_string = tmp_item['test name'].split('_')[1] + ' ' + tmp_item['learning_rate']
-
+        label_string = tmp_item['test name'].split('-')[3]+ ' ' +tmp_item['test name'].split('_')[1] + ' ' + tmp_item['learning_rate']
+        tmp_history_show = tmp_history['val_loss']
         if 'gen0' in tmp_item['test name']:
-            plt.plot(np.arange(tmp_epochs)[1000:], tmp_history['loss'][1000:], label=label_string)
+            plt.plot(np.arange(tmp_epochs)[1000:], tmp_history_show[1000:], label=label_string)
         else:
             gen_number = int(tmp_item['test name'].split('_')[1][3])
             # print(gen_number)
@@ -206,7 +206,7 @@ if __name__ == '__main__':
             #     gen_shift = 12000
             # elif 'gen5' in tmp_item['test name']:
             #     gen_shift = 15000
-            plt.plot(np.arange(tmp_epochs) + gen_shift, tmp_history['loss'], label=label_string)
+            plt.plot(np.arange(tmp_epochs) + gen_shift, tmp_history_show, label=label_string)
     plt.legend()
 
     # *** plot example
