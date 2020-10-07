@@ -206,6 +206,8 @@ if __name__ == '__main__':
         model = define_model_lstm()
     elif model_type == 'conv4l':
         model = define_model_flat()
+    elif model_type == 'c4lexp':
+        model = define_model()
     else:
         print('Unrecognized model type')
 
