@@ -3,13 +3,14 @@ import numpy as np
 import h5py
 
 if __name__ == '__main__':
-    path = 'data'
-    out_path = 'data'
-    data_h5_file = 'prepared_data_ang_30-30_aug20.npz'
-    out_h5_file = '3D_aug20.h5'
+    # path = 'data'
+    path = '/home/jedle/data/Sign-Language/_source_clean/'
+    out_path = '/home/jedle/Projects/Sign-Language/nn_tests/data'
+    data_h5_file = 'prepared_data_ang_30-30_aug15.h5'
+    out_h5_file = '3D_aug15.h5'
 
-    # f = h5py.File(os.path.join(path, data_h5_file), 'r')
-    f = np.load(os.path.join(path, data_h5_file), allow_pickle=True)
+    f = h5py.File(os.path.join(path, data_h5_file), 'r')
+    # f = np.load(os.path.join(path, data_h5_file))
 
     test_X = f['test_X']
     test_Y = f['test_Y']
@@ -32,9 +33,9 @@ if __name__ == '__main__':
     train_Y = data_Y[:split_point, :]
     test_Y = data_Y[split_point:, :]
 
-    # hf = h5py.File(os.path.join(out_path, out_h5_file), 'w')
-    # hf.create_dataset('train_X', data=train_X)
-    # hf.create_dataset('train_Y', data=train_Y)
-    # hf.create_dataset('test_X', data=test_X)
-    # hf.create_dataset('test_Y', data=test_Y)
-    # hf.close()
+    hf = h5py.File(os.path.join(out_path, out_h5_file), 'w')
+    hf.create_dataset('train_X', data=train_X)
+    hf.create_dataset('train_Y', data=train_Y)
+    hf.create_dataset('test_X', data=test_X)
+    hf.create_dataset('test_Y', data=test_Y)
+    hf.close()
