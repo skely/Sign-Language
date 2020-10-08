@@ -119,15 +119,15 @@ def get_best_model(_path):
 def plot_example(all_results, selection=0):
     selected_model_name = all_results[0]['model file name']
     model = load_model(os.path.join(path, selected_model_name))
-    limit_prediction = 10
+    limit_prediction = selection+1
 
     data = data_prep.load_HDF5(os.path.join(path, data_file))
     train_X, train_Y, test_X, test_Y = data
     if 'simple' in selected_model_name:  # reshape 3D vystupu
-        predicted = model.predict(test_X[0:limit_prediction, :, 0:1])
+        predicted = model.predict(test_X[:limit_prediction, :, 0:1])
     else:
         test_Y = np.reshape(test_Y, (-1, 97, 3), 'F')
-        predicted = model.predict(test_X[0:limit_prediction])
+        predicted = model.predict(test_X[:limit_prediction])
         predicted = np.reshape(predicted, (-1, 97, 3), 'F')
 
     plot_compare([test_X[selection, :], test_Y[selection, :], predicted[selection, :]], ['polynomial interpolation', 'ground truth', 'nn prediction'], title='prediction data', version=1)
@@ -148,11 +148,13 @@ def plot_all_histories(_selected_results, left_cut=1):
 if __name__ == '__main__':
     # path = '/home/jedle/Projects/Sign-Language/tests/Conv1D/tests'
     path = '/home/jedle/Projects/Sign-Language/nn_tests/data'
+    # path = '/home/jedle/Projects/Sign-Language/nn_tests/data_old'
     # data_file = '/home/jedle/data/Sign-Language/_source_clean/prepared_data_30-30_aug10times2.npz'
     # data_h5_file = '/home/jedle/Projects/Sign-Language/tests/old/Conv3D/tests/simple_aug10.h5'
     data_file = os.path.join(path, '3D_aug10.h5')
+    # data_file = os.path.join('/home/jedle/Projects/Sign-Language/nn_tests/data', '3D_aug10.h5')
     epsilon = 10e-8
-    selection = 10
+    selection = 50
 
     data = data_prep.load_HDF5(os.path.join(path, data_file))
     train_X, train_Y, test_X, test_Y = data
@@ -166,8 +168,10 @@ if __name__ == '__main__':
     #     print(i['test name'])
     # *** grand filter logs
     selected_results = all_results
-    # selected_results = [l for l in selected_results if 'loaded model file name (continuous training)' in l.keys()]
-    # selected_results = [l for l in selected_results if int(l['epochs']) > 10]  # my testing nets have usually 3 epochs
+    # print(selected_results[0].keys())
+
+    selected_results = [l for l in selected_results if 'ihTi4' not in l['test name']]
+    selected_results = [l for l in selected_results if 'eusRT' not in l['test name']]
 
     # *** plot custom loss histories
     best_representatives = selected_results
@@ -175,37 +179,36 @@ if __name__ == '__main__':
     # best_representatives = [l for l in best_representatives if 'oldcopypasta' not in l['test name']]
 
     plt.figure()
+    plt.axhline(y=epsilon, linewidth=.5, color='r')
+    plt.title('loss comparison (baseline={})'.format(epsilon))
+
     for tmp_item in best_representatives:
-        print('{} : {} : {}'.format(tmp_item['test name'], tmp_item['learning_rate'], tmp_item['loss']))
         tmp_history_file = os.path.join(path, tmp_item['training history'])
         tmp_history = np.load(tmp_history_file, allow_pickle=True)
+        print('{} : {} : {} : {}'.format(tmp_item['test name'], tmp_item['loaded model file name (continuous training)'], tmp_item['learning_rate'], tmp_item['loss']))
+        # print(tmp_history.keys())
         tmp_epochs = int(tmp_item['epochs'])
-        plt.axhline(y=epsilon, linewidth=.5, color='r')
-        plt.title('loss comparison (baseline={})'.format(epsilon))
+        label_string = tmp_item['test name'].split('-')[3]+ ' ' +tmp_item['test name'].split('_')[1] + ' ' + tmp_item['learning_rate']
+        tmp_history_show = tmp_history['val_loss']
         if 'gen0' in tmp_item['test name']:
-            gen_shift = 0
-            plt.plot(np.arange(tmp_epochs)[1000:]+gen_shift, tmp_history['loss'][1000:], label=tmp_item['test name'].split('_')[1] + ' ' + tmp_item['learning_rate'])
-        elif 'gen1' in tmp_item['test name']:
-            gen_shift = 3000
-            plt.plot(np.arange(tmp_epochs)+gen_shift, tmp_history['loss'], label=tmp_item['test name'].split('_')[1] + ' ' + tmp_item['learning_rate'])
-        elif 'gen2' in tmp_item['test name']:
-            gen_shift = 6000
-            plt.plot(np.arange(tmp_epochs) + gen_shift, tmp_history['loss'], label=tmp_item['test name'].split('_')[1] + ' ' + tmp_item['learning_rate'])
-        elif 'gen3' in tmp_item['test name']:
-            gen_shift = 9000
-            plt.plot(np.arange(tmp_epochs) + gen_shift, tmp_history['loss'], label=tmp_item['test name'].split('_')[1] + ' ' + tmp_item['learning_rate'])
-        elif 'gen4' in tmp_item['test name']:
-            gen_shift = 12000
-            plt.plot(np.arange(tmp_epochs) + gen_shift, tmp_history['loss'], label=tmp_item['test name'].split('_')[1] + ' ' + tmp_item['learning_rate'])
-        elif 'gen5' in tmp_item['test name']:
-            gen_shift = 15000
-            plt.plot(np.arange(tmp_epochs) + gen_shift, tmp_history['loss'], label=tmp_item['test name'].split('_')[1] + ' ' + tmp_item['learning_rate'])
+            plt.plot(np.arange(tmp_epochs)[1000:], tmp_history_show[1000:], label=label_string)
         else:
-            pass
-            # plt.plot(np.arange(tmp_epochs)[1:], tmp_history['loss'][1:], label=tmp_item['test name'].split('_')[1] + ' ' + tmp_item['learning_rate'])
-        # plt.plot(np.arange(tmp_epochs) + gen_shift, tmp_history['loss'], label=tmp_item['test name'].split('_')[1] + ' ' + tmp_item['learning_rate'])
+            gen_number = int(tmp_item['test name'].split('_')[1][3])
+            # print(gen_number)
+            gen_shift = gen_number * 3000
+            # if 'gen1' in tmp_item['test name']:
+            #     gen_shift = 3000
+            # elif 'gen2' in tmp_item['test name']:
+            #     gen_shift = 6000
+            # elif 'gen3' in tmp_item['test name']:
+            #     gen_shift = 9000
+            # elif 'gen4' in tmp_item['test name']:
+            #     gen_shift = 12000
+            # elif 'gen5' in tmp_item['test name']:
+            #     gen_shift = 15000
+            plt.plot(np.arange(tmp_epochs) + gen_shift, tmp_history_show, label=label_string)
     plt.legend()
 
     # *** plot example
-    # plot_example(best_representatives, selection=0)
+    # plot_example(best_representatives, selection=selection)
     plt.show()

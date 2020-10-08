@@ -16,7 +16,9 @@ dict_file = os.path.join(source_dir, 'ultimate_dictionary2.txt')
 # take_dict_file = os.path.join(source_dir, 'dictionary_takes_v3.txt')
 # dict_dict_file = os.path.join(source_dir, 'dictionary_dict_v4.txt')
 # prepared_data_file = os.path.join(source_dir, 'prepared_data_ang_30-30_aug10_b.npz')
-prepared_data_file = os.path.join(source_dir, 'prepared_data_ang_30-30_aug20.h5')
+# prepared_data_file = os.path.join(source_dir, 'prepared_data_ang_30-30_aug15.h5')
+prepared_data_file = '/media/jedle/464c8603-999d-4d4a-a291-ddafa08cb810/nn_test_data/' + 'prepared_data_ang_30-30_aug20.h5'
+# prepared_data_file = os.path.join(source_dir, 'prepared_data_ang_30-30_aug20.npz')
 # augmented_data_file = os.path.join(source_dir, 'pure_30-30_aug10.h5')
 
 m, c, _ = BVH.get_joint_list(bvh_src_file)
@@ -119,9 +121,11 @@ test_Y = data_Y[:split_pos, :, :]
 train_X = data_X[split_pos:, :, :]
 test_X = data_X[:split_pos, :, :]
 
-# h5file = h5py.File(prepared_data_file, 'w')
-# h5file.create_dataset('train_X', data=train_X)
-# h5file.create_dataset('test_X', data=test_X)
-# h5file.create_dataset('train_Y', data=train_Y)
-# h5file.create_dataset('test_Y', data=test_Y)
-np.savez(prepared_data_file, train_Y=train_Y, test_Y=test_Y, train_X=train_X, test_X=test_X)
+h5file = h5py.File(prepared_data_file, 'w')
+h5file.create_dataset('train_X', data=train_X)
+h5file.create_dataset('test_X', data=test_X)
+h5file.create_dataset('train_Y', data=train_Y)
+h5file.create_dataset('test_Y', data=test_Y)
+h5file.close()
+#
+# np.savez(prepared_data_file, train_Y=train_Y, test_Y=test_Y, train_X=train_X, test_X=test_X)
