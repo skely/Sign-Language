@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 from keras.models import load_model
 sys.path.append('/home/jedle/Projects/Sign-Language/lib/')
 import data_prep
+import argparse
 
 def log_read(file):
     with open(file, 'r') as f:
@@ -146,13 +147,14 @@ def plot_all_histories(_selected_results, left_cut=1):
 
 
 if __name__ == '__main__':
-    # path = '/home/jedle/Projects/Sign-Language/tests/Conv1D/tests'
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-w', '--whitelist_any', help='whitelist (allowed name - any match)', required=False, action='append', type=str, nargs='+')
+    parser.add_argument('-a', '--whitelist_all', help='whitelist (allowed name - all match)', required=False, action='append', type=str, nargs='+')
+    parser.add_argument('-f', '--filter', help='filter results by name (black list)', required=False, action='append', type=str, nargs='+')
+    args = parser.parse_args()
+
     path = '/home/jedle/Projects/Sign-Language/nn_tests/data'
-    # path = '/home/jedle/Projects/Sign-Language/nn_tests/data_old'
-    # data_file = '/home/jedle/data/Sign-Language/_source_clean/prepared_data_30-30_aug10times2.npz'
-    # data_h5_file = '/home/jedle/Projects/Sign-Language/tests/old/Conv3D/tests/simple_aug10.h5'
     data_file = os.path.join(path, '3D_aug10.h5')
-    # data_file = os.path.join('/home/jedle/Projects/Sign-Language/nn_tests/data', '3D_aug10.h5')
     epsilon = 10e-8
     selection = 50
 
@@ -168,15 +170,19 @@ if __name__ == '__main__':
     #     print(i['test name'])
     # *** grand filter logs
     selected_results = all_results
-    # print(selected_results[0].keys())
 
     selected_results = [l for l in selected_results if 'ihTi4' not in l['test name']]
     selected_results = [l for l in selected_results if 'eusRT' not in l['test name']]
-
+    if args.whitelist_any:
+        print(args.whitelist_any[0])
+        selected_results = [l for l in selected_results if any(w in l['test name'] for w in args.whitelist_any[0])]
+    if args.whitelist_all:
+        print(args.whitelist_all[0])
+        selected_results = [l for l in selected_results if all(w in l['test name'] for w in args.whitelist_all[0])]
+    if args.filter:
+        selected_results = [l for l in selected_results if args.filter not in l['test name']]
     # *** plot custom loss histories
     best_representatives = selected_results
-    # best_representatives = [l for l in best_representatives if 'train' not in l['test name']]
-    # best_representatives = [l for l in best_representatives if 'oldcopypasta' not in l['test name']]
 
     plt.figure()
     plt.axhline(y=epsilon, linewidth=.5, color='r')
@@ -188,27 +194,18 @@ if __name__ == '__main__':
         print('{} : {} : {} : {}'.format(tmp_item['test name'], tmp_item['loaded model file name (continuous training)'], tmp_item['learning_rate'], tmp_item['loss']))
         # print(tmp_history.keys())
         tmp_epochs = int(tmp_item['epochs'])
-        label_string = tmp_item['test name'].split('-')[3]+ ' ' +tmp_item['test name'].split('_')[1] + ' ' + tmp_item['learning_rate']
+        label_string = tmp_item['test name'].split('-')[3]+ ' ' +tmp_item['test name'].split('_')[0] + ' ' + tmp_item['learning_rate']
         tmp_history_show = tmp_history['val_loss']
         if 'gen0' in tmp_item['test name']:
             plt.plot(np.arange(tmp_epochs)[1000:], tmp_history_show[1000:], label=label_string)
         else:
             gen_number = int(tmp_item['test name'].split('_')[1][3])
-            # print(gen_number)
             gen_shift = gen_number * 3000
-            # if 'gen1' in tmp_item['test name']:
-            #     gen_shift = 3000
-            # elif 'gen2' in tmp_item['test name']:
-            #     gen_shift = 6000
-            # elif 'gen3' in tmp_item['test name']:
-            #     gen_shift = 9000
-            # elif 'gen4' in tmp_item['test name']:
-            #     gen_shift = 12000
-            # elif 'gen5' in tmp_item['test name']:
-            #     gen_shift = 15000
             plt.plot(np.arange(tmp_epochs) + gen_shift, tmp_history_show, label=label_string)
-    plt.legend()
-
+    if len(best_representatives) > 10:
+        plt.legend(ncol=2)
+    else:
+        plt.legend()
     # *** plot example
     # plot_example(best_representatives, selection=selection)
     plt.show()
