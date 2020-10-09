@@ -20,8 +20,11 @@ if __name__ == '__main__':
     data_X = np.concatenate((train_X, test_X))
     data_Y = np.concatenate((train_Y, test_Y))
 
-    print(np.shape(train_X))
-    print(np.shape(train_Y))
+    print(np.shape(data_X))
+    print(np.shape(data_Y))
+
+    data_X = np.reshape(data_X, (-1, 97, 3), order='C')
+    data_Y = np.reshape(data_Y, (-1, 97, 3), order='C')
 
     data_length = np.size(data_X, 0)
     split = 0.1

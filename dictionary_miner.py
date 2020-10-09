@@ -6,19 +6,12 @@ import matplotlib.pyplot as plt
 import h5py
 
 
-# data_dir = '/home/jedle/data/Sign-Language/_source_clean/dataprep/'
 source_dir = '/home/jedle/data/Sign-Language/_source_clean/'
 bvh_dir = '/home/jedle/data/Sign-Language/_source_clean/bvh/'
 # template for BVH structure
 bvh_src_file = '/home/jedle/data/Sign-Language/_source_clean/bvh/16_05_20_a_R.bvh'
 
 dict_file = os.path.join(source_dir, 'ultimate_dictionary2.txt')
-# take_dict_file = os.path.join(source_dir, 'dictionary_takes_v3.txt')
-# dict_dict_file = os.path.join(source_dir, 'dictionary_dict_v4.txt')
-# prepared_data_file = os.path.join(source_dir, 'prepared_data_ang_30-30_aug10_b.npz')
-# prepared_data_file = os.path.join(source_dir, 'prepared_data_ang_30-30_aug15.h5')
-prepared_data_file = '/media/jedle/464c8603-999d-4d4a-a291-ddafa08cb810/nn_test_data/' + 'prepared_data_ang_30-30_aug20_ground_truth.h5'
-# prepared_data_file = os.path.join(source_dir, 'prepared_data_ang_30-30_aug20.npz')
 augmented_data_file = '/media/jedle/464c8603-999d-4d4a-a291-ddafa08cb810/nn_test_data/' + 'pure_30-30_aug10.h5'
 
 m, c, _ = BVH.get_joint_list(bvh_src_file)
@@ -61,7 +54,7 @@ item_list = data_prep.augmentation_noise(item_list, augmentation, noise)
 
 # ***** normalize *****
 angular_limits = np.array((-360, 360))
-# analysis
+# ***** analysis ******1
 do_analysis = False
 if do_analysis:
     print(np.shape(item_list))
@@ -85,49 +78,7 @@ if do_analysis:
 _norm_scale = np.array([angular_limits[0], angular_limits[1]])
 item_list = data_prep.normalize(item_list, _norm_scale)
 
-# data - label split
-# NN input data (data_X) : cubic approximation of trajectories
-
 # *** augmented data save
 hf = h5py.File(augmented_data_file, 'w')
 hf.create_dataset('data', data=item_list)
 hf.close()
-
-second_part = False
-if second_part:
-# *** train - test data preparation (interpolation of transition)
-    data_Y = item_list.copy()
-    data_X = item_list.copy()
-
-    tot_len = len(item_list)
-    print('Train - test split and preparations:')
-    for i, item in enumerate(item_list):
-        item_bef = item[:surroundings[0]+1, :]
-        item_aft = item[-surroundings[1]-1:, :]
-        transition_length = np.size(item, 0) - surroundings[0] - surroundings[1]
-        transition_approximation = data_prep.sign_synthesis(item_bef, item_aft, transition_length - 1)
-        new_item = np.concatenate((item_bef, transition_approximation, item_aft))
-        data_X[i, :, :] = new_item
-        sys.stdout.write('\rDataprep processing... {:.2f}% done.'.format(100 * (i + 1) / tot_len))
-    sys.stdout.write('\rdone.\n')
-
-    # shuffle
-    data_Y = data_prep.shuffle(data_Y, random_seed)
-    data_X = data_prep.shuffle(data_X, random_seed)
-
-    # train - test split
-    split_pos = int(np.size(data_X, 0)*train_test_ratio)
-
-    train_Y = data_Y[split_pos:, :, :]
-    test_Y = data_Y[:split_pos, :, :]
-    train_X = data_X[split_pos:, :, :]
-    test_X = data_X[:split_pos, :, :]
-
-    h5file = h5py.File(prepared_data_file, 'w')
-    h5file.create_dataset('train_X', data=train_X)
-    h5file.create_dataset('test_X', data=test_X)
-    h5file.create_dataset('train_Y', data=train_Y)
-    h5file.create_dataset('test_Y', data=test_Y)
-    h5file.close()
-    #
-    # np.savez(prepared_data_file, train_Y=train_Y, test_Y=test_Y, train_X=train_X, test_X=test_X)
