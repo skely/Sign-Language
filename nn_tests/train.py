@@ -23,7 +23,7 @@ def get_random_alphanumeric_string(length):
 
 def call_optimizer(_opt):
     if _opt == 'adam':
-        _optimizer = adam(learning_rate=lr, beta_1=0.9 ,beta_2=0.999, epsilon=1e-07, amsgrad=False)
+        _optimizer = adam(learning_rate=0.01, beta_1=0.9 ,beta_2=0.999, epsilon=1e-07, amsgrad=False)
     elif _opt == 'sgd':
         _optimizer = sgd(lr=lr, momentum=momentum, decay=decay)
     else:
@@ -145,12 +145,30 @@ def define_model_lstm():
     _activation = 'sigmoid'
 
     input = Input(shape=(97, 3))
-    layer1 = LSTM(8, activation=_activation, return_sequences=True)(input)
+    layer1 = LSTM(9, activation=_activation, return_sequences=True)(input)
     layer2 = LSTM(3, activation=_activation, return_sequences=True)(layer1)
     # layer_flatten = Flatten()(layer2)
     # output = Dense(97*3, activation=_activation)(layer_flatten)
 
     _model = Model(inputs=input, outputs=layer2, name=test_name)
+    _model.compile(loss=_loss, optimizer=_optimizer, metrics=['mean_squared_error'])
+    _model.summary()
+
+    return _model
+
+
+def define_model_lstm_tiny():
+    _loss = 'mean_squared_error'
+    _optimizer = call_optimizer(opt)
+    _activation = 'sigmoid'
+
+    input = Input(shape=(97, 3))
+#     layer1 = LSTM(8, activation=_activation, return_sequences=True)(input)
+    layer = LSTM(3, activation=_activation, return_sequences=True)(input)
+    # layer_flatten = Flatten()(layer2)
+    # output = Dense(97*3, activation=_activation)(layer_flatten)
+
+    _model = Model(inputs=input, outputs=layer, name=test_name)
     _model.compile(loss=_loss, optimizer=_optimizer, metrics=['mean_squared_error'])
     _model.summary()
 
@@ -209,6 +227,22 @@ def train_test_split(_data, _p=0.1, _flatten=False):
     return train, test
 
 
+def load_data(_file_name, _version='norm', _load_size=100):
+    f = h5py.File(_file_name, 'r')
+
+    if _version == 'norm':
+        X = f['X'][:_load_size]
+        Y = f['Y'][:_load_size]
+        return X, Y
+
+    elif _version == 'flip':
+        X = f['X'][:_load_size]
+        Y = f['Y'][:_load_size]
+        X_rev = np.flip(X, axis=1)
+        Y_rev = np.flip(Y, axis=1)
+        return np.concatenate((X, X_rev)), np.concatenate((Y, Y_rev))
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-l', '--learning_rate', help='learning rate (default lr=0.01)', required=True, type=float)
@@ -234,24 +268,32 @@ if __name__ == '__main__':
     time_string = '{:02d}-{:02d}-{:02d}-{}'.format(time_stamp.year%100, time_stamp.month, time_stamp.day, get_random_alphanumeric_string(5))
     test_name = '{}_{}_{}'.format(model_type, generation, time_string)
 
-    epochs = 1500
+    limited_batch_size = 100000  #  aug20 length = 1715320
+    epochs = 50
     batch = 200
     lr = args.learning_rate
     momentum = 0
-    opt = 'sgd'
+    opt = 'adam'
     # opt = sgd(lr=lr, momentum=momentum, decay=decay)
     # optimizer = adam(learning_rate=lr, beta_1=0.9, beta_2=0.999, epsilon=1e-07, amsgrad=False)
 
     decay = lr / epochs
 
-    f = h5py.File(os.path.join(path, data_file), 'r')
-    listkeys = f.keys()
-    X = f['X']
-    Y = f['Y']
+    # f = h5py.File(os.path.join(path, data_file), 'r')
+    # listkeys = f.keys()
+    # X = f['X'][:limited_batch_size]
+    # Y = f['Y'][:limited_batch_size]
+
+    X, Y = load_data(os.path.join(path, data_file), _version='flip', _load_size=limited_batch_size)
 
     train_X, test_X = train_test_split(np.array(X))
-    train_Y, test_Y = train_test_split(np.array(Y))
-    # train_Y, test_Y = train_test_split(np.array(Y), _flatten=True)
+
+    if model_type in ['lstm1l', 'lstm2l']:
+        flatten = False
+    else:
+        flatten = True
+    train_Y, test_Y = train_test_split(np.array(Y), _flatten=flatten)
+    
     data = train_X, train_Y, test_X, test_Y
 
     if 'loaded_model' in globals():
@@ -269,6 +311,8 @@ if __name__ == '__main__':
         model = define_model_conv()
     elif model_type == 'dil4l':
         model = define_model_dilconv()
+    elif model_type == 'lstm1l':
+        model = define_model_lstm_tiny()
     else:
         print('Unrecognized model type')
 
