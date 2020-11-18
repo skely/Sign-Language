@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 from keras import backend as K
 from keras.layers import Dense, Input, Conv1D, Flatten, concatenate, LSTM
 from keras.models import Model, load_model
-from keras.optimizers import sgd
+from keras.optimizers import sgd, adam
 from contextlib import redirect_stdout
 import random
 import string
@@ -21,11 +21,59 @@ def get_random_alphanumeric_string(length):
     return result_str
 
 
+def call_optimizer(_opt):
+    if _opt == 'adam':
+        _optimizer = adam(learning_rate=lr, beta_1=0.9 ,beta_2=0.999, epsilon=1e-07, amsgrad=False)
+    elif _opt == 'sgd':
+        _optimizer = sgd(lr=lr, momentum=momentum, decay=decay)
+    else:
+        print('invalid optimizer: {}'.format(_opt))
+        _optimizer = None
+    return _optimizer
+
+
+def define_model_conv():
+    _loss = 'mean_squared_error'
+    _optimizer = call_optimizer(opt)
+    _activation = 'sigmoid'
+
+    input = Input(shape=(97, 3))
+    layer1 = Conv1D(filters=8, kernel_size=3, activation=_activation, padding='same')(input)
+    layer2 = Conv1D(filters=16, kernel_size=3, activation=_activation, padding='same')(layer1)
+    layer3 = Conv1D(filters=32, kernel_size=3, activation=_activation, padding='same')(layer2)
+    layer5 = Flatten()(layer3)
+    layer6 = Dense(97*3, activation=_activation)(layer5)
+
+    _model = Model(inputs=input, outputs=layer6, name=test_name)
+    _model.compile(loss=_loss, optimizer=_optimizer, metrics=['mean_squared_error'])
+    _model.summary()
+
+    return _model
+
+
+def define_model_dilconv():
+    _loss = 'mean_squared_error'
+    _optimizer = call_optimizer(opt)
+    _activation = 'sigmoid'
+
+    input = Input(shape=(97, 3))
+    layer1 = Conv1D(filters=9, kernel_size=3, activation=_activation, dilation_rate=2, padding='same')(input)
+    layer2 = Conv1D(filters=9, kernel_size=9, activation=_activation, dilation_rate=2, padding='same')(layer1)
+    layer3 = Conv1D(filters=9, kernel_size=27, activation=_activation, dilation_rate=2, padding='same')(layer2)
+    layer4 = Conv1D(filters=9, kernel_size=45, activation=_activation, dilation_rate=2, padding='same')(layer3)
+    layer5 = Flatten()(layer4)
+    layer6 = Dense(97*3, activation=_activation)(layer5)
+
+    _model = Model(inputs=input, outputs=layer6, name=test_name)
+    _model.compile(loss=_loss, optimizer=_optimizer, metrics=['mean_squared_error'])
+    _model.summary()
+
+    return _model
+
+
 def define_model():
     _loss = 'mean_squared_error'
-    # _optimizer = 'sgd'
-    # _optimizer = sgd(lr=lr, momentum=momentum, decay=decay)
-    _optimizer = sgd(lr=lr, momentum=momentum)
+    _optimizer = call_optimizer(opt)
     _activation = 'sigmoid'
 
     input = Input(shape=(97, 3))
@@ -49,9 +97,7 @@ def define_model():
 
 def define_model_flat():
     _loss = 'mean_squared_error'
-    # _optimizer = 'sgd'
-    # _optimizer = sgd(lr=lr, momentum=momentum, decay=decay)
-    _optimizer = sgd(lr=lr, momentum=momentum)
+    _optimizer = call_optimizer(opt)
     _activation = 'sigmoid'
 
     input = Input(shape=(97, 3))
@@ -75,9 +121,7 @@ def define_model_flat():
 
 def define_model_short():
     _loss = 'mean_squared_error'
-    # _optimizer = 'sgd'
-    # _optimizer = sgd(lr=lr, momentum=momentum, decay=decay)
-    _optimizer = sgd(lr=lr, momentum=momentum)
+    _optimizer = call_optimizer(opt)
     _activation = 'sigmoid'
 
     input = Input(shape=(97, 3))
@@ -97,16 +141,12 @@ def define_model_short():
 
 def define_model_lstm():
     _loss = 'mean_squared_error'
-    # _optimizer = 'sgd'
-    # _optimizer = sgd(lr=lr, momentum=momentum, decay=decay)
-    _optimizer = sgd(lr=lr, momentum=momentum)
+    _optimizer = call_optimizer(opt)
     _activation = 'sigmoid'
 
     input = Input(shape=(97, 3))
     layer1 = LSTM(8, activation=_activation, return_sequences=True)(input)
-    # concat1 = concatenate([input, layer1])
-    layer2 = LSTM(16, activation=_activation, return_sequences=True)(layer1)
-    # concat2 = concatenate([concat1, layer2])
+    layer2 = LSTM(3, activation=_activation, return_sequences=True)(layer1)
     # layer_flatten = Flatten()(layer2)
     # output = Dense(97*3, activation=_activation)(layer_flatten)
 
@@ -149,6 +189,7 @@ def log():
     lines_list.append('batch: {}\n'.format(batch))
     lines_list.append('loss: {}\n'.format(evaluation[0]))
     lines_list.append('mse: {}\n'.format(evaluation[1]))
+    lines_list.append('optimizer: {}\n'.format(opt))
     lines_list.append('learning_rate: {}\n'.format(lr))
     lines_list.append('momentum: {}\n'.format(momentum))
     if 'decay' in globals():
@@ -158,6 +199,16 @@ def log():
     with open(os.path.join(path, 'all_logs.txt'.format(test_name)), 'a') as f:
         f.writelines(lines_list)
 
+
+def train_test_split(_data, _p=0.1, _flatten=False):
+    data_items = np.size(_data, 0)
+    train = _data[:int(data_items*(1-_p))]
+    test = _data[int(data_items*(1-_p)):]
+    if _flatten:
+        test = np.reshape(test, (-1, 97*3))
+    return train, test
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-l', '--learning_rate', help='learning rate (default lr=0.01)', required=True, type=float)
@@ -166,7 +217,7 @@ if __name__ == '__main__':
 
     # path = '/home/jedle/Projects/Sign-Language/nn_tests/data'
     path = '/storage/plzen1/home/jedlicka/Sign-Language/nn_tests/data'
-    data_file = '3D_aug10.h5'
+    data_file = 'aug20.h5'
     # model_type = 'conv2l'
     # loaded_model = 'model_conv2l_gen0_20-09-29-22-26.h5'
     if 'model' in args.loaded_model:
@@ -183,18 +234,24 @@ if __name__ == '__main__':
     time_string = '{:02d}-{:02d}-{:02d}-{}'.format(time_stamp.year%100, time_stamp.month, time_stamp.day, get_random_alphanumeric_string(5))
     test_name = '{}_{}_{}'.format(model_type, generation, time_string)
 
-    epochs = 3000
-    batch = 500
+    epochs = 1500
+    batch = 200
     lr = args.learning_rate
     momentum = 0
-    # decay = lr / epochs
+    opt = 'sgd'
+    # opt = sgd(lr=lr, momentum=momentum, decay=decay)
+    # optimizer = adam(learning_rate=lr, beta_1=0.9, beta_2=0.999, epsilon=1e-07, amsgrad=False)
+
+    decay = lr / epochs
 
     f = h5py.File(os.path.join(path, data_file), 'r')
-    train_X = np.array(f['train_X'])
-    train_Y = np.array(f['train_Y'])
-    test_X = np.array(f['test_X'])
-    test_Y = np.array(f['test_Y'])
+    listkeys = f.keys()
+    X = f['X']
+    Y = f['Y']
 
+    train_X, test_X = train_test_split(np.array(X))
+    train_Y, test_Y = train_test_split(np.array(Y))
+    # train_Y, test_Y = train_test_split(np.array(Y), _flatten=True)
     data = train_X, train_Y, test_X, test_Y
 
     if 'loaded_model' in globals():
@@ -208,6 +265,10 @@ if __name__ == '__main__':
         model = define_model_flat()
     elif model_type == 'c4lexp':
         model = define_model()
+    elif model_type == 'c3lconv':
+        model = define_model_conv()
+    elif model_type == 'dil4l':
+        model = define_model_dilconv()
     else:
         print('Unrecognized model type')
 

@@ -6,8 +6,8 @@ if __name__ == '__main__':
     # path = 'data'
     path = '/home/jedle/data/Sign-Language/_source_clean/'
     out_path = '/home/jedle/Projects/Sign-Language/nn_tests/data'
-    data_h5_file = 'prepared_data_ang_30-30_aug15.h5'
-    out_h5_file = '3D_aug15.h5'
+    data_h5_file = 'prepared_data_ang_30-30_aug20.h5'
+    out_h5_file = '3D_aug20.h5'
 
     f = h5py.File(os.path.join(path, data_h5_file), 'r')
     # f = np.load(os.path.join(path, data_h5_file))
@@ -24,7 +24,7 @@ if __name__ == '__main__':
     print(np.shape(data_Y))
 
     data_X = np.reshape(data_X, (-1, 97, 3), order='C')
-    data_Y = np.reshape(data_Y, (-1, 97, 3), order='C')
+    data_Y = np.reshape(data_Y, (-1, 97*3), order='C')
 
     data_length = np.size(data_X, 0)
     split = 0.1

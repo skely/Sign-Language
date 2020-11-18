@@ -205,3 +205,12 @@ def load_HDF5(_file_name):
         test_Y = np.array(f['test_Y'])
     data = train_X, train_Y, test_X, test_Y
     return data
+
+
+def load_HDF5_new(_file_name):
+    with h5py.File(_file_name, 'r') as f:
+        X = f['X']
+        Y = f['Y']
+        # test_X = np.array(f['test_X'])
+        # test_Y = np.array(f['test_Y'])
+    return X, Y
