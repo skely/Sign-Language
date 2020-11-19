@@ -157,18 +157,18 @@ def define_model_lstm():
     return _model
 
 
-def define_model_lstm_tiny():
+def define_model_lstm_v2():
     _loss = 'mean_squared_error'
     _optimizer = call_optimizer(opt)
     _activation = 'sigmoid'
 
     input = Input(shape=(97, 3))
-#     layer1 = LSTM(8, activation=_activation, return_sequences=True)(input)
-    layer = LSTM(3, activation=_activation, return_sequences=True)(input)
+    layer1 = LSTM(64, activation=_activation, return_sequences=True)(input)
+    layer2 = LSTM(3, activation=_activation, return_sequences=True)(layer1)
     # layer_flatten = Flatten()(layer2)
     # output = Dense(97*3, activation=_activation)(layer_flatten)
 
-    _model = Model(inputs=input, outputs=layer, name=test_name)
+    _model = Model(inputs=input, outputs=layer2, name=test_name)
     _model.compile(loss=_loss, optimizer=_optimizer, metrics=['mean_squared_error'])
     _model.summary()
 
