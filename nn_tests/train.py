@@ -312,7 +312,7 @@ if __name__ == '__main__':
     elif model_type == 'dil4l':
         model = define_model_dilconv()
     elif model_type == 'lstm1l':
-        model = define_model_lstm_tiny()
+        model = define_model_lstm_v2()
     else:
         print('Unrecognized model type')
 
