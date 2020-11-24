@@ -145,12 +145,13 @@ def define_model_lstm():
     _activation = 'sigmoid'
 
     input = Input(shape=(97, 3))
-    layer1 = LSTM(9, activation=_activation, return_sequences=True)(input)
-    layer2 = LSTM(3, activation=_activation, return_sequences=True)(layer1)
+    layer1 = LSTM(64, activation=_activation, return_sequences=True)(input)
+    layer2 = LSTM(16, activation=_activation, return_sequences=True)(layer1)
+    layer3 = LSTM(3, activation=_activation, return_sequences=True)(layer2)
     # layer_flatten = Flatten()(layer2)
     # output = Dense(97*3, activation=_activation)(layer_flatten)
 
-    _model = Model(inputs=input, outputs=layer2, name=test_name)
+    _model = Model(inputs=input, outputs=layer3, name=test_name)
     _model.compile(loss=_loss, optimizer=_optimizer, metrics=['mean_squared_error'])
     _model.summary()
 
@@ -269,7 +270,7 @@ if __name__ == '__main__':
     test_name = '{}_{}_{}'.format(model_type, generation, time_string)
 
     limited_batch_size = 100000  #  aug20 length = 1715320
-    epochs = 50
+    epochs = 200
     batch = 200
     lr = args.learning_rate
     momentum = 0
@@ -301,7 +302,7 @@ if __name__ == '__main__':
         K.set_value(model.optimizer.lr, lr)
     elif model_type == 'conv2l':
         model = define_model_short()
-    elif model_type == 'lstm2l':
+    elif model_type == 'lstmV1':
         model = define_model_lstm()
     elif model_type == 'conv4l':
         model = define_model_flat()
@@ -311,7 +312,7 @@ if __name__ == '__main__':
         model = define_model_conv()
     elif model_type == 'dil4l':
         model = define_model_dilconv()
-    elif model_type == 'lstm1l':
+    elif model_type == 'lstmV2':
         model = define_model_lstm_v2()
     else:
         print('Unrecognized model type')
