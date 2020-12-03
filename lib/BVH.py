@@ -215,7 +215,15 @@ def get_all_ancestors(_joint_name, _tree_structure_joint_list):
     return stack
 
 
-def generate_BVH(_trajectory, _BVH_output_file, _template_BVH_file, channels='rotation'):
+def generate_BVH(_trajectory, _BVH_output_file, _template_BVH_file, channels='rotation', zero_shift=True):
+    """
+    Saves angular trajectory as BVH file (using template BVH for header creation)
+    :param _trajectory:
+    :param _BVH_output_file:
+    :param _template_BVH_file:
+    :param channels:
+    :return:
+    """
     template_header, _ = load_raw(_template_BVH_file)
     template_trajectories = load_trajectory(_template_BVH_file)
 
@@ -237,7 +245,10 @@ def generate_BVH(_trajectory, _BVH_output_file, _template_BVH_file, channels='ro
                 tmp = _trajectory[i, iter_pick]
                 iter_pick += 1
             else:
-                tmp = np.mean(template_trajectories[:, j])
+                if j < 3 and zero_shift:
+                    tmp = 0  # shift root position to 0,0,0
+                else:
+                    tmp = np.mean(template_trajectories[:, j])
 
             if j < expected_number_of_channels - 1:
                 new_line += '{:.6f} '.format(tmp)
