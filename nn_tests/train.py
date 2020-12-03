@@ -7,7 +7,7 @@ import pickle
 import h5py
 import matplotlib.pyplot as plt
 from keras import backend as K
-from keras.layers import Dense, Input, Conv1D, Flatten, concatenate, LSTM
+from keras.layers import Dense, Input, Conv1D, Flatten, concatenate, LSTM, Bidirectional
 from keras.models import Model, load_model
 from keras.optimizers import sgd, adam
 from contextlib import redirect_stdout
@@ -176,6 +176,44 @@ def define_model_lstm_v2():
     return _model
 
 
+def define_model_lstm_v3():
+    _loss = 'mean_squared_error'
+    _optimizer = call_optimizer(opt)
+    _activation = 'sigmoid'
+
+    input = Input(shape=(97, 3))
+    layer1 = LSTM(64, activation=_activation, return_sequences=True)(input)
+    layer2 = LSTM(32, activation=_activation, return_sequences=True)(layer1)
+    layer3 = LSTM(16, activation=_activation, return_sequences=True)(layer2)
+    layer4 = LSTM(3, activation=_activation, return_sequences=True)(layer3)
+    # layer_flatten = Flatten()(layer2)
+    # output = Dense(97*3, activation=_activation)(layer_flatten)
+
+    _model = Model(inputs=input, outputs=layer4, name=test_name)
+    _model.compile(loss=_loss, optimizer=_optimizer, metrics=['mean_squared_error'])
+    _model.summary()
+
+    return _model
+
+
+def define_model_bilstm():
+    _loss = 'mean_squared_error'
+    _optimizer = call_optimizer(opt)
+    _activation = 'sigmoid'
+
+    input = Input(shape=(97, 3))
+    layer1 = Bidirectional(LSTM(16, activation=_activation, return_sequences=True))(input)
+    layer2 = LSTM(3, activation=_activation, return_sequences=True)(layer1)
+    # layer_flatten = Flatten()(layer2)
+    # output = Dense(97*3, activation=_activation)(layer_flatten)
+
+    _model = Model(inputs=input, outputs=layer2, name=test_name)
+    _model.compile(loss=_loss, optimizer=_optimizer, metrics=['mean_squared_error'])
+    _model.summary()
+
+    return _model
+
+
 def training(_model, _data, _epochs, _batch_size):
     _history = _model.fit(_data[0], _data[1], validation_data=(_data[2], _data[3]), epochs=_epochs, batch_size=_batch_size, verbose=2)
     _evaluations = _model.evaluate(_data[2], _data[3])
@@ -215,7 +253,7 @@ def log():
         lines_list.append('decay: {}\n'.format(decay))
     lines_list.append('elapsed time: {}\n'.format(end_time_stamp - time_stamp))
 
-    with open(os.path.join(path, 'all_logs.txt'.format(test_name)), 'a') as f:
+    with open(os.path.join(path, 'all_logs_tst.txt'.format(test_name)), 'a') as f:
         f.writelines(lines_list)
 
 
@@ -250,8 +288,8 @@ if __name__ == '__main__':
     parser.add_argument('-m', '--loaded_model', help='model path (if continuous training) or model_type if creating new model (conv2l, conv4l, etc.)', type=str)
     args = parser.parse_args()
 
-    # path = '/home/jedle/Projects/Sign-Language/nn_tests/data'
-    path = '/storage/plzen1/home/jedlicka/Sign-Language/nn_tests/data'
+    path = '/home/jedle/Projects/Sign-Language/nn_tests/data'
+    # path = '/storage/plzen1/home/jedlicka/Sign-Language/nn_tests/data'
     data_file = 'aug20.h5'
     # model_type = 'conv2l'
     # loaded_model = 'model_conv2l_gen0_20-09-29-22-26.h5'
@@ -269,8 +307,8 @@ if __name__ == '__main__':
     time_string = '{:02d}-{:02d}-{:02d}-{}'.format(time_stamp.year%100, time_stamp.month, time_stamp.day, get_random_alphanumeric_string(5))
     test_name = '{}_{}_{}'.format(model_type, generation, time_string)
 
-    limited_batch_size = 100000  #  aug20 length = 1715320
-    epochs = 200
+    limited_batch_size = 10000  #  aug20 length = 1715320
+    epochs = 500
     batch = 200
     lr = args.learning_rate
     momentum = 0
@@ -289,7 +327,7 @@ if __name__ == '__main__':
 
     train_X, test_X = train_test_split(np.array(X))
 
-    if model_type in ['lstm1l', 'lstm2l']:
+    if model_type in ['lstmV1', 'lstmV2', 'lstmV3', 'bilstm']:
         flatten = False
     else:
         flatten = True
@@ -314,6 +352,10 @@ if __name__ == '__main__':
         model = define_model_dilconv()
     elif model_type == 'lstmV2':
         model = define_model_lstm_v2()
+    elif model_type == 'lstmV3':
+        model = define_model_lstm_v3()
+    elif model_type == 'bilstm':
+        model = define_model_bilstm()
     else:
         print('Unrecognized model type')
 
